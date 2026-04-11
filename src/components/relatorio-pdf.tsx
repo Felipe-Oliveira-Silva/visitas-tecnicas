@@ -179,7 +179,7 @@ interface RelatorioPDFProps {
     } | null
   }
   generatedAt: Date
-  plan: string
+  plan: 'start' | 'pro' | 'enterprise'
   company: {
     name: string
     cnpj: string | null
