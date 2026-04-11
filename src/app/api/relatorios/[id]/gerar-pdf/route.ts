@@ -102,7 +102,7 @@ export async function POST(
       React.createElement(RelatorioPDF, {
         report: reportData,
         generatedAt,
-        plan: report.company.plan as 'start' | 'pro' | 'enterprise',
+        plan: report.company.plan,
         company: {
           name: report.company.name,
           cnpj: report.company.cnpj,
