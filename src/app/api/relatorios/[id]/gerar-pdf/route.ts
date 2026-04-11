@@ -85,13 +85,6 @@ export async function POST(
       filledBy: {
         name: report.filledBy.name,
       },
-      company: {
-        name: report.company.name,
-        cnpj: report.company.cnpj,
-        phone: report.company.phone,
-        email: report.company.email,
-        address: report.company.address,
-      },
       signature: report.signature
         ? {
             signerName: report.signature.signerName,
