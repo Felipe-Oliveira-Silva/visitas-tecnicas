@@ -55,6 +55,7 @@ export default function CadastroPage() {
       return
     }
 
+    setLoading(false)
     router.push('/')
   }
 
