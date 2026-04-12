@@ -62,32 +62,61 @@ export async function checkUserLimit(companyId: string): Promise<{
 }>
 ```
 
-### Função interna
+### Funções internas
 
 ```ts
-// Evita repetição nos checks
+// Centraliza cálculo do intervalo do mês corrente em UTC — reutilizado em getUsage e checkVisitLimit
+function getMonthRangeUTC(): { gte: Date; lt: Date }
+
+// Evita repetição de leitura do plano nos checks
+// Lança erro explícito se company não encontrada ou plan não reconhecido em PLAN_LIMITS
 async function getCompanyPlan(companyId: string): Promise<string>
+```
+
+### Lógica de `getMonthRangeUTC`
+
+Calcula o intervalo `[início do mês corrente, início do próximo mês)` em UTC:
+```ts
+const now = new Date()
+const gte = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+const lt  = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
+return { gte, lt }
+```
+
+### Lógica de `getCompanyPlan`
+
+```ts
+const company = await prisma.company.findUnique({ where: { id: companyId }, select: { plan: true } })
+if (!company) throw new Error(`Company not found: ${companyId}`)
+if (!PLAN_LIMITS[company.plan]) throw new Error(`Unknown plan: ${company.plan}`)
+return company.plan
 ```
 
 ### Lógica de `getUsage`
 
-- `visitsThisMonth`: `prisma.visit.count({ where: { companyId, createdAt: { gte: início do mês atual em UTC (dia 1, 00:00:00Z), lt: início do próximo mês em UTC } } })`
-- `activeUsers`: `prisma.user.count({ where: { companyId, active: true } })`
+```ts
+const { gte, lt } = getMonthRangeUTC()
+const [visitsThisMonth, activeUsers] = await Promise.all([
+  prisma.visit.count({ where: { companyId, createdAt: { gte, lt } } }),
+  prisma.user.count({ where: { companyId, active: true } }),
+])
+return { visitsThisMonth, activeUsers }
+```
 
 ### Lógica de `checkVisitLimit`
 
-1. `plan = await getCompanyPlan(companyId)`
+1. `plan = await getCompanyPlan(companyId)` (lança se inválido)
 2. `limit = PLAN_LIMITS[plan].visitsPerMonth`
 3. Se `limit === null` → `{ allowed: true, limit: null, current: 0 }`
-4. `current = count de visitas no mês`
+4. `current = prisma.visit.count` usando `getMonthRangeUTC()`
 5. `{ allowed: current < limit, limit, current }`
 
 ### Lógica de `checkUserLimit`
 
-1. `plan = await getCompanyPlan(companyId)`
+1. `plan = await getCompanyPlan(companyId)` (lança se inválido)
 2. `limit = PLAN_LIMITS[plan].users`
 3. Se `limit === null` → `{ allowed: true, limit: null, current: 0 }`
-4. `current = count de usuários ativos (active: true)`
+4. `current = prisma.user.count({ where: { companyId, active: true } })`
 5. `{ allowed: current < limit, limit, current }`
 
 ---
@@ -106,7 +135,7 @@ if (!check.allowed) {
     resource: 'visits',
     limit: check.limit,
     current: check.current,
-    message: `Limite de ${check.limit} visitas/mês atingido.`,
+    message: `Você atingiu o limite de ${check.limit} visitas este mês. Faça upgrade para continuar registrando visitas.`,
   }, { status: 403 })
 }
 ```
@@ -123,7 +152,7 @@ if (!check.allowed) {
     resource: 'users',
     limit: check.limit,
     current: check.current,
-    message: `Limite de ${check.limit} usuários atingido.`,
+    message: `Você atingiu o limite de ${check.limit} usuários do seu plano. Faça upgrade para adicionar mais usuários.`,
   }, { status: 403 })
 }
 ```
@@ -143,12 +172,12 @@ interface UsageBarProps {
 ```
 
 Comportamento:
-- `limit === null` → barra cheia verde + texto "Ilimitado"
-- `percentage < 80` → barra verde
-- `percentage >= 80 && < 100` → barra amarela
-- `percentage >= 100` → barra vermelha
+- `limit === null` → barra em estado neutro (sem preenchimento percentual), texto "X (Ilimitado)" — ex: "128 (Ilimitado)"
+- `percentage < 80` → barra cyan (cor neutra do sistema, não "verde de sucesso")
+- `percentage >= 80 && < 100` → barra amarela (aviso)
+- `percentage >= 100` → barra vermelha (bloqueio)
 
-Exibe: label, `current / limit` (ou "Ilimitado"), barra colorida, percentual.
+Exibe: label, `current / limit` (ou `current (Ilimitado)`), barra colorida, percentual (oculto quando ilimitado.
 
 ---
 
@@ -162,7 +191,8 @@ const companyData = await prisma.company.findUnique({
   where: { id: companyId },
   select: { plan: true }
 })
-const limits = PLAN_LIMITS[companyData?.plan ?? 'start']
+// Sem fallback silencioso — getCompanyPlan lança se plano for inválido
+const limits = PLAN_LIMITS[companyData.plan]
 ```
 
 Widget renderizado abaixo dos 4 cards existentes:
