@@ -8,7 +8,8 @@ export default auth((req) => {
   const isSuperAdminRoute = req.nextUrl.pathname.startsWith("/superadmin")
   const isPublicRoute =
     req.nextUrl.pathname === "/" ||
-    req.nextUrl.pathname.startsWith("/cadastro")
+    req.nextUrl.pathname.startsWith("/cadastro") ||
+    req.nextUrl.pathname.startsWith("/api/cadastro")
 
   if (isApiAuth) return NextResponse.next()
 

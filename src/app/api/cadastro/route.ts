@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
@@ -25,18 +26,10 @@ export async function POST(request: Request) {
 
   const { nomeEmpresa, nomeAdmin, email, password, phone, cnpj } = parsed.data
 
-  const existing = await prisma.user.findUnique({ where: { email } })
-  if (existing) {
-    return NextResponse.json(
-      { error: 'Este e-mail já está cadastrado.' },
-      { status: 400 }
-    )
-  }
+  const hashedPassword = await bcrypt.hash(password, 12)
 
-  const hashedPassword = await bcrypt.hash(password, 10)
-
-  await prisma.$transaction([
-    prisma.company.create({
+  try {
+    await prisma.company.create({
       data: {
         name: nomeEmpresa,
         phone: phone ?? null,
@@ -52,8 +45,19 @@ export async function POST(request: Request) {
           },
         },
       },
-    }),
-  ])
+    })
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Este e-mail já está cadastrado.' },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json(
+      { error: 'Erro interno. Tente novamente.' },
+      { status: 500 }
+    )
+  }
 
   return NextResponse.json({ ok: true }, { status: 201 })
 }
