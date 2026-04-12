@@ -13,6 +13,8 @@ export function FaqItem({ question, answer }: FaqItemProps) {
   return (
     <div className="border border-slate-800 rounded-lg overflow-hidden">
       <button
+        type="button"
+        aria-expanded={open}
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-5 py-4 text-left bg-slate-900 hover:bg-slate-800 transition-colors"
       >
