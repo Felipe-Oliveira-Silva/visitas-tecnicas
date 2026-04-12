@@ -32,8 +32,8 @@ export async function POST(request: Request) {
     await prisma.company.create({
       data: {
         name: nomeEmpresa,
-        phone: phone ?? null,
-        cnpj: cnpj ?? null,
+        phone: phone || null,
+        cnpj: cnpj || null,
         plan: 'start',
         active: false,
         users: {
