@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { WHATSAPP_URL } from '@/lib/constants'
 
 interface Plan {
   key: string
@@ -58,7 +59,7 @@ const PLANS: Plan[] = [
   },
 ]
 
-const WA_BASE = 'https://wa.me/5511916821634?text='
+const WA_BASE = `${WHATSAPP_URL}?text=`
 
 interface PlanCardsProps {
   userName: string | null
