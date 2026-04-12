@@ -1,7 +1,9 @@
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FaqItem } from '@/components/faq-item'
+import { PlanCards } from '@/components/plan-cards'
 import { WHATSAPP_URL } from '@/lib/constants'
 
 const FEATURES = [
@@ -27,19 +29,31 @@ const FAQ_ITEMS = [
     answer: 'Não. O Relatec funciona 100% no navegador, em qualquer dispositivo.',
   },
   {
-    question: 'Posso testar antes de pagar?',
-    answer: 'Sim. O plano Start é gratuito e sem prazo de expiração.',
-  },
-  {
     question: 'Como funciona o pagamento?',
     answer:
-      'Após o cadastro, entre em contato via WhatsApp para ativar seu plano pago.',
+      'Após o cadastro, escolha o plano e entre em contato via WhatsApp. Sua conta será ativada em até 24h.',
+  },
+  {
+    question: 'Posso mudar de plano depois?',
+    answer: 'Sim. Entre em contato via WhatsApp a qualquer momento para fazer upgrade ou downgrade.',
   },
 ]
 
 export default async function HomePage() {
   const session = await auth()
-  if (session) redirect('/dashboard')
+
+  let companyActive = false
+  let userName: string | null = null
+
+  if (session) {
+    const company = await prisma.company.findUnique({
+      where: { id: session.user.companyId },
+      select: { active: true },
+    })
+    companyActive = company?.active ?? false
+    if (companyActive) redirect('/dashboard')
+    userName = session.user.name ?? null
+  }
 
   return (
     <div className="min-h-screen bg-[#080d14] text-slate-100">
@@ -68,20 +82,31 @@ export default async function HomePage() {
           >
             FAQ
           </a>
-          <Link
-            href="/login"
-            className="border border-cyan-500 text-cyan-500 px-4 py-1.5 rounded-lg text-sm hover:bg-cyan-500/10 transition-colors"
-          >
-            Entrar
-          </Link>
-          <Link
-            href="/cadastro"
-            className="bg-cyan-500 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-cyan-400 transition-colors"
-          >
-            Cadastrar
-          </Link>
+          {session ? null : (
+            <Link
+              href="/login"
+              className="border border-cyan-500 text-cyan-500 px-4 py-1.5 rounded-lg text-sm hover:bg-cyan-500/10 transition-colors"
+            >
+              Entrar
+            </Link>
+          )}
+          {session ? null : (
+            <Link
+              href="/cadastro"
+              className="bg-cyan-500 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-cyan-400 transition-colors"
+            >
+              Cadastrar
+            </Link>
+          )}
         </div>
       </nav>
+
+      {/* BANNER — conta pendente (só exibe se logado + empresa inativa) */}
+      {session && !companyActive && (
+        <div className="bg-[#0d1b2a] border-b border-[#1e3a5f] px-6 py-3 text-center text-sm text-slate-300">
+          👤 Olá, <strong className="text-slate-100">{userName}</strong> — sua conta está pendente de ativação. Escolha um plano abaixo para começar.
+        </div>
+      )}
 
       {/* HERO */}
       <section className="px-6 py-24 text-center border-b border-slate-800">
@@ -100,12 +125,21 @@ export default async function HomePage() {
           clientes. Multi-empresa, relatórios em PDF e assinatura digital.
         </p>
         <div className="flex gap-3 justify-center mb-12">
-          <Link
-            href="/cadastro"
-            className="bg-cyan-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-cyan-400 transition-colors"
-          >
-            Começar grátis →
-          </Link>
+          {session ? (
+            <a
+              href="#planos"
+              className="bg-cyan-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-cyan-400 transition-colors"
+            >
+              Escolher plano →
+            </a>
+          ) : (
+            <Link
+              href="/cadastro"
+              className="bg-cyan-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-cyan-400 transition-colors"
+            >
+              Começar agora →
+            </Link>
+          )}
           <a
             href="#planos"
             className="border border-slate-700 text-slate-300 px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors"
@@ -113,7 +147,7 @@ export default async function HomePage() {
             Ver planos
           </a>
         </div>
-        {/* Screenshot placeholder — substituir por imagem real */}
+        {/* Screenshot placeholder */}
         <div className="max-w-2xl mx-auto bg-[#0d1b2a] border border-[#1e3a5f] rounded-xl p-6">
           <div className="flex gap-1.5 mb-4">
             <div className="w-3 h-3 rounded-full bg-red-500" />
@@ -170,74 +204,12 @@ export default async function HomePage() {
         <h2 className="text-2xl font-bold text-slate-100 mb-10">
           Escolha o plano ideal para sua empresa
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-
-          {/* Start */}
-          <div className="bg-[#0d1b2a] border border-[#1e3a5f] rounded-xl p-6 text-left flex flex-col">
-            <p className="text-slate-400 text-xs uppercase tracking-widest mb-2">Start</p>
-            <p className="text-3xl font-extrabold text-slate-100 mb-1">Grátis</p>
-            <p className="text-slate-500 text-sm mb-6">Para começar</p>
-            <ul className="flex-1 space-y-2 mb-6 text-sm text-slate-400">
-              <li>✓ Até X usuários</li>
-              <li>✓ Até X clientes</li>
-              <li>✓ Relatórios em PDF</li>
-              <li>✓ Marca Relatec no PDF</li>
-            </ul>
-            <Link
-              href="/cadastro"
-              className="block text-center border border-cyan-500 text-cyan-500 py-2.5 rounded-lg text-sm font-semibold hover:bg-cyan-500/10 transition-colors"
-            >
-              Cadastrar grátis
-            </Link>
-          </div>
-
-          {/* Pro */}
-          <div className="bg-[#0d1b2a] border-2 border-cyan-500 rounded-xl p-6 text-left flex flex-col relative">
-            <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
-              Mais popular
-            </span>
-            <p className="text-cyan-500 text-xs uppercase tracking-widest mb-2">Pro</p>
-            <p className="text-3xl font-extrabold text-slate-100 mb-1">
-              R$ X
-              <span className="text-base font-normal text-slate-500">/mês</span>
-            </p>
-            <p className="text-slate-500 text-sm mb-6">Para equipes em crescimento</p>
-            <ul className="flex-1 space-y-2 mb-6 text-sm text-slate-400">
-              <li>✓ Até X usuários</li>
-              <li>✓ Clientes ilimitados</li>
-              <li>✓ Todos os recursos</li>
-              <li>✓ Marca discreta no PDF</li>
-            </ul>
-            <Link
-              href="/cadastro"
-              className="block text-center bg-cyan-500 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-cyan-400 transition-colors"
-            >
-              Assinar Pro
-            </Link>
-          </div>
-
-          {/* Enterprise */}
-          <div className="bg-[#0d1b2a] border border-slate-700 rounded-xl p-6 text-left flex flex-col">
-            <p className="text-slate-400 text-xs uppercase tracking-widest mb-2">Enterprise</p>
-            <p className="text-2xl font-extrabold text-slate-100 mb-1">Sob consulta</p>
-            <p className="text-slate-500 text-sm mb-6">White-label total</p>
-            <ul className="flex-1 space-y-2 mb-6 text-sm text-slate-400">
-              <li>✓ Usuários ilimitados</li>
-              <li>✓ Clientes ilimitados</li>
-              <li>✓ Sem marca Relatec no PDF</li>
-              <li>✓ Suporte dedicado</li>
-            </ul>
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-center border border-slate-700 text-slate-400 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors"
-            >
-              Falar no WhatsApp
-            </a>
-          </div>
-
-        </div>
+        <PlanCards userName={userName} />
+        {session && !companyActive && (
+          <p className="text-slate-500 text-sm mt-8">
+            Após o contato, sua conta será ativada em até 24h.
+          </p>
+        )}
       </section>
 
       {/* FAQ */}
@@ -263,18 +235,22 @@ export default async function HomePage() {
         </p>
         <p className="text-slate-500 text-sm mb-4">Gestão de Visitas Técnicas</p>
         <div className="flex gap-6 justify-center mb-6">
-          <Link
-            href="/login"
-            className="text-slate-500 text-sm hover:text-slate-300 transition-colors"
-          >
-            Entrar
-          </Link>
-          <Link
-            href="/cadastro"
-            className="text-slate-500 text-sm hover:text-slate-300 transition-colors"
-          >
-            Cadastrar
-          </Link>
+          {!session && (
+            <Link
+              href="/login"
+              className="text-slate-500 text-sm hover:text-slate-300 transition-colors"
+            >
+              Entrar
+            </Link>
+          )}
+          {!session && (
+            <Link
+              href="/cadastro"
+              className="text-slate-500 text-sm hover:text-slate-300 transition-colors"
+            >
+              Cadastrar
+            </Link>
+          )}
           <a
             href={WHATSAPP_URL}
             target="_blank"
