@@ -34,6 +34,7 @@ export function UpgradeModal({ open, onClose, resource, limit, current }: Upgrad
             💬 Fazer upgrade via WhatsApp
           </a>
           <button
+            type="button"
             onClick={onClose}
             className="py-2.5 rounded-lg text-sm text-slate-400 hover:text-slate-200 border border-slate-700 hover:border-slate-600 transition-colors"
           >
