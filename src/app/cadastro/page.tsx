@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { WHATSAPP_URL } from '@/lib/constants'
 
 export default function CadastroPage() {
   return (
@@ -15,7 +16,7 @@ export default function CadastroPage() {
           via WhatsApp para criar sua conta.
         </p>
         <a
-          href="https://wa.me/5511916821634"
+          href={WHATSAPP_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block bg-cyan-500 hover:bg-cyan-400 text-white font-semibold px-6 py-3 rounded-lg transition-colors mb-4"
