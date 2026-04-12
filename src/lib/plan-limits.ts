@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 
-export const PLAN_LIMITS: Record<string, { visitsPerMonth: number | null; users: number | null }> = {
+type PlanKey = 'start' | 'pro' | 'enterprise'
+
+export const PLAN_LIMITS: Record<PlanKey, { visitsPerMonth: number | null; users: number | null }> = {
   start:      { visitsPerMonth: 30,   users: 2    },
   pro:        { visitsPerMonth: 300,  users: 10   },
   enterprise: { visitsPerMonth: null, users: null },
@@ -13,14 +15,15 @@ function getMonthRangeUTC(): { gte: Date; lt: Date } {
   return { gte, lt }
 }
 
-async function getCompanyPlan(companyId: string): Promise<string> {
+async function getCompanyPlan(companyId: string): Promise<PlanKey> {
   const company = await prisma.company.findUnique({
     where: { id: companyId },
     select: { plan: true },
   })
   if (!company) throw new Error(`Company not found: ${companyId}`)
-  if (!PLAN_LIMITS[company.plan]) throw new Error(`Unknown plan: ${company.plan}`)
-  return company.plan
+  const plan = company.plan as string
+  if (!PLAN_LIMITS[plan as PlanKey]) throw new Error(`Unknown plan: ${plan}`)
+  return plan as PlanKey
 }
 
 export async function getUsage(companyId: string): Promise<{
@@ -35,6 +38,10 @@ export async function getUsage(companyId: string): Promise<{
   return { visitsThisMonth, activeUsers }
 }
 
+/**
+ * Checks whether a new visit can be created for the given company.
+ * When limit is null (unlimited plan), returns current: 0 — for display counts use getUsage() instead.
+ */
 export async function checkVisitLimit(companyId: string): Promise<{
   allowed: boolean
   limit: number | null
@@ -48,6 +55,10 @@ export async function checkVisitLimit(companyId: string): Promise<{
   return { allowed: current < limit, limit, current }
 }
 
+/**
+ * Checks whether a new user can be created for the given company.
+ * When limit is null (unlimited plan), returns current: 0 — for display counts use getUsage() instead.
+ */
 export async function checkUserLimit(companyId: string): Promise<{
   allowed: boolean
   limit: number | null
