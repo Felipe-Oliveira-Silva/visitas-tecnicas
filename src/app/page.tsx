@@ -104,7 +104,10 @@ export default async function HomePage() {
       {/* BANNER — conta pendente (só exibe se logado + empresa inativa) */}
       {session && !companyActive && (
         <div className="bg-[#0d1b2a] border-b border-[#1e3a5f] px-6 py-3 text-center text-sm text-slate-300">
-          👤 Olá, <strong className="text-slate-100">{userName}</strong> — sua conta está pendente de ativação. Escolha um plano abaixo para começar.
+          {userName
+            ? <>👤 Olá, <strong className="text-slate-100">{userName}</strong> — sua conta está pendente de ativação. Escolha um plano abaixo para começar.</>
+            : <>👤 Sua conta está pendente de ativação. Escolha um plano abaixo para começar.</>
+          }
         </div>
       )}
 
