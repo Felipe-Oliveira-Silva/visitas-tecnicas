@@ -86,12 +86,25 @@ import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Readable } from 'stream'
 
+// Validação das variáveis de ambiente em tempo de inicialização do módulo.
+// Falha explícita no boot — nunca em runtime durante uma requisição.
+const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY
+const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME
+
+if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) {
+  throw new Error(
+    'Missing R2 environment variables. Required: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME',
+  )
+}
+
 const r2 = new S3Client({
   region: 'auto',
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    accessKeyId: R2_ACCESS_KEY_ID,
+    secretAccessKey: R2_SECRET_ACCESS_KEY,
   },
 })
 
@@ -101,34 +114,57 @@ export async function uploadToR2(
   contentType: string,
   contentDisposition?: string,
 ): Promise<void> {
-  await r2.send(new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
-    Key: key,
-    Body: body,
-    ContentType: contentType,
-    ...(contentDisposition ? { ContentDisposition: contentDisposition } : {}),
-  }))
+  try {
+    await r2.send(new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+      ...(contentDisposition ? { ContentDisposition: contentDisposition } : {}),
+    }))
+  } catch (err) {
+    throw new Error(`R2 upload failed for key "${key}": ${err instanceof Error ? err.message : err}`)
+  }
 }
 
 export async function downloadFromR2(key: string): Promise<Buffer> {
-  const res = await r2.send(new GetObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
-    Key: key,
-  }))
-  const chunks: Uint8Array[] = []
-  for await (const chunk of res.Body as Readable) {
-    chunks.push(chunk)
+  try {
+    const res = await r2.send(new GetObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+    }))
+    if (!res.Body) throw new Error(`Empty body returned for key "${key}"`)
+    const chunks: Uint8Array[] = []
+    for await (const chunk of res.Body as Readable) {
+      chunks.push(chunk)
+    }
+    return Buffer.concat(chunks)
+  } catch (err) {
+    throw new Error(`R2 download failed for key "${key}": ${err instanceof Error ? err.message : err}`)
   }
-  return Buffer.concat(chunks)
 }
 
 // expiresIn em segundos — padrão 15 minutos
-export async function getPresignedDownloadUrl(key: string, expiresIn = 900): Promise<string> {
-  return getSignedUrl(
-    r2,
-    new GetObjectCommand({ Bucket: process.env.R2_BUCKET_NAME!, Key: key }),
-    { expiresIn },
-  )
+// ResponseContentDisposition garante que o browser trate como download
+// independente dos headers do objeto no bucket.
+export async function getPresignedDownloadUrl(
+  key: string,
+  filename: string,
+  expiresIn = 900,
+): Promise<string> {
+  try {
+    return getSignedUrl(
+      r2,
+      new GetObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: key,
+        ResponseContentDisposition: `attachment; filename="${filename}"`,
+      }),
+      { expiresIn },
+    )
+  } catch (err) {
+    throw new Error(`R2 presign failed for key "${key}": ${err instanceof Error ? err.message : err}`)
+  }
 }
 ```
 
@@ -258,7 +294,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   })
   if (!pdf) return NextResponse.json({ error: 'PDF não encontrado' }, { status: 404 })
 
-  const url = await getPresignedDownloadUrl(pdf.pdfPath, 900)
+  const filename = `relatorio_${id}.pdf`
+  const url = await getPresignedDownloadUrl(pdf.pdfPath, filename, 900)
   return NextResponse.redirect(url)
 }
 ```
@@ -301,7 +338,12 @@ setPdfReady(true)
 
 // DEPOIS
 {pdfReady && (
-  <a href={`/api/relatorios/${reportId}/pdf`} target="_blank" className="...">
+  <a
+    href={`/api/relatorios/${reportId}/pdf`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="..."
+  >
     Baixar PDF
   </a>
 )}
