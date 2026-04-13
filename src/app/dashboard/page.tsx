@@ -33,7 +33,7 @@ export default async function DashboardPage() {
 
   const now = new Date()
   const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
-  const daysUntilReset = Math.ceil((nextMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  const daysUntilReset = Math.max(1, Math.ceil((nextMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
 
   const planNames: Record<string, string> = {
     start: 'Básico',
