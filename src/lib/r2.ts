@@ -1,6 +1,5 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { Readable } from 'stream'
 
 // NOTE: This module uses the Node.js runtime only.
 // Do not import it from Edge Runtime route handlers.
