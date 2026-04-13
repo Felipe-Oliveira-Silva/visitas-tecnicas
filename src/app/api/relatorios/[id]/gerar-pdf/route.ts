@@ -3,10 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { RelatorioPDF } from '@/components/relatorio-pdf'
-import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
-import { readFileSync } from 'fs'
-import path from 'path'
+import { uploadToR2, downloadFromR2 } from '@/lib/r2'
 import React from 'react'
 
 export async function POST(
@@ -54,10 +51,8 @@ export async function POST(
     // Converter imagem da assinatura para base64 (se existir)
     let imageBase64: string | null = null
     if (report.signature?.imagePath) {
-      const absPath = path.join(process.cwd(), 'public', report.signature.imagePath)
-      if (existsSync(absPath)) {
-        imageBase64 = readFileSync(absPath).toString('base64')
-      }
+      const sigBuffer = await downloadFromR2(report.signature.imagePath)
+      imageBase64 = sigBuffer.toString('base64')
     }
 
     // Montar objeto para o componente PDF
@@ -114,18 +109,9 @@ export async function POST(
     )
     
 
-    // Garantir que a pasta existe
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'pdfs')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
-    // Salvar arquivo
-    const fileName = `relatorio_${id}.pdf`
-    const filePath = path.join(uploadsDir, fileName)
-    await writeFile(filePath, buffer)
-
-    const pdfPath = `/uploads/pdfs/${fileName}`
+    const pdfKey = `${session.user.companyId}/reports/${id}/report.pdf`
+    await uploadToR2(pdfKey, buffer, 'application/pdf', `attachment; filename="relatorio_${id}.pdf"`)
+    const pdfPath = pdfKey
 
     // Criar ou atualizar ReportPdf
     await prisma.reportPdf.upsert({
@@ -140,7 +126,7 @@ export async function POST(
       },
     })
 
-    return NextResponse.json({ pdfPath })
+    return NextResponse.json({ ok: true })
   } catch (error) {
     console.error('[GERAR_PDF]', error)
     return NextResponse.json({ error: 'Erro ao gerar PDF' }, { status: 500 })
