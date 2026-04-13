@@ -2,6 +2,9 @@ import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Readable } from 'stream'
 
+// NOTE: This module uses the Node.js runtime only.
+// Do not import it from Edge Runtime route handlers.
+
 // Validate env vars at module load — fails explicitly at boot, never silently at request time
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID
@@ -25,6 +28,7 @@ const r2 = new S3Client({
 
 export async function uploadToR2(
   key: string,
+  // body must be fully-buffered; streaming uploads are not supported yet
   body: Buffer,
   contentType: string,
   contentDisposition?: string,
@@ -50,7 +54,7 @@ export async function downloadFromR2(key: string): Promise<Buffer> {
     }))
     if (!res.Body) throw new Error(`Empty body returned for key "${key}"`)
     const chunks: Uint8Array[] = []
-    for await (const chunk of res.Body as Readable) {
+    for await (const chunk of res.Body as AsyncIterable<Uint8Array>) {
       chunks.push(chunk)
     }
     return Buffer.concat(chunks)
@@ -72,7 +76,7 @@ export async function getPresignedDownloadUrl(
       new GetObjectCommand({
         Bucket: R2_BUCKET_NAME,
         Key: key,
-        ResponseContentDisposition: `attachment; filename="${filename}"`,
+        ResponseContentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
       }),
       { expiresIn },
     )
