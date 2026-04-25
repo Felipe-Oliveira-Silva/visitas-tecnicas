@@ -70,12 +70,28 @@ export async function getPresignedDownloadUrl(
   expiresIn = 900,
 ): Promise<string> {
   try {
-    return getSignedUrl(
+    return await getSignedUrl(
       r2,
       new GetObjectCommand({
         Bucket: R2_BUCKET_NAME,
         Key: key,
         ResponseContentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
+      }),
+      { expiresIn },
+    )
+  } catch (err) {
+    throw new Error(`R2 presign failed for key "${key}": ${err instanceof Error ? err.message : err}`)
+  }
+}
+
+// Use for inline display (e.g. <img src>); no Content-Disposition so the browser renders directly
+export async function getPresignedViewUrl(key: string, expiresIn = 900): Promise<string> {
+  try {
+    return await getSignedUrl(
+      r2,
+      new GetObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: key,
       }),
       { expiresIn },
     )

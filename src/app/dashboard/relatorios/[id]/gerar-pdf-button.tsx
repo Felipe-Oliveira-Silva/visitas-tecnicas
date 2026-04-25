@@ -4,13 +4,13 @@ import { useState } from 'react'
 
 interface GerarPdfButtonProps {
   reportId: string
-  existingPdfPath: string | null
+  hasPdf: boolean
   status: string
 }
 
-export function GerarPdfButton({ reportId, existingPdfPath, status }: GerarPdfButtonProps) {
+export function GerarPdfButton({ reportId, hasPdf, status }: GerarPdfButtonProps) {
   const [loading, setLoading] = useState(false)
-  const [pdfReady, setPdfReady] = useState<boolean>(existingPdfPath !== null)
+  const [pdfReady, setPdfReady] = useState<boolean>(hasPdf)
   const [error, setError] = useState<string | null>(null)
 
   if (status === 'DRAFT') return null
