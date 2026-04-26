@@ -16,7 +16,7 @@ Levar o Relatec de `localhost:3000` para um ambiente de produção real e acess�
 GitHub (main)
     │
     └─▶ Vercel (auto-deploy a cada push em main)
-            ├─ Build: prisma migrate deploy && next build
+            ├─ Build: prisma generate && prisma migrate deploy && next build
             ├─ Runtime: Node.js serverless functions
             └─ Env vars (apenas Production):
                   DATABASE_URL        ← Neon pooler   (Marketplace)
@@ -86,23 +86,29 @@ O Vercel executa `npm install` (dispara `postinstall`) antes do build command. S
 ### 4. `prisma/seed.ts` — senhas via env vars + guard de produção
 
 ```ts
-// Guard: sempre exige a flag explícita, independente de NODE_ENV
-// (vercel env pull não injeta NODE_ENV localmente, tornando o check ineficaz)
-if (process.env.ALLOW_PROD_SEED !== 'true') {
-  console.error('❌ Seed bloqueado. Use ALLOW_PROD_SEED=true para confirmar a execução.')
+// Proteção dupla: duas flags independentes devem ser setadas explicitamente.
+// Uma flag única pode ser setada por engano; duas flags simultâneas tornam
+// a execução acidental praticamente impossível.
+if (process.env.ALLOW_PROD_SEED !== 'true' || process.env.SEED_CONFIRM !== 'production') {
+  console.error(
+    '❌ Seed bloqueado. Para executar, defina:\n' +
+    '   ALLOW_PROD_SEED=true\n' +
+    '   SEED_CONFIRM=production'
+  )
   process.exit(1)
 }
 
+// Senhas obrigatórias via env vars — nenhum fallback hardcoded
 const adminPassword = process.env.ADMIN_PASSWORD
 const superAdminPassword = process.env.SUPERADMIN_PASSWORD
 
 if (!adminPassword || !superAdminPassword) {
-  console.error('❌ ADMIN_PASSWORD e SUPERADMIN_PASSWORD são obrigatórios.')
+  console.error('❌ ADMIN_PASSWORD e SUPERADMIN_PASSWORD são obrigatórios para o seed de produção.')
   process.exit(1)
 }
 ```
 
-Senhas fracas hardcoded (`admin123`, `superadmin123`) são removidas. As senhas vêm exclusivamente de env vars, eliminando o risco de credenciais fracas ativas em produção.
+Senhas fracas hardcoded (`admin123`, `superadmin123`) são removidas. As senhas vêm exclusivamente de env vars. A proteção dupla (`ALLOW_PROD_SEED` + `SEED_CONFIRM`) evita execução acidental no banco de produção.
 
 ---
 
@@ -130,7 +136,7 @@ chore: prepare for production deploy
 
 Project Settings → Build & Development Settings:
 ```
-Build Command:   prisma migrate deploy && next build
+Build Command:   prisma generate && prisma migrate deploy && next build
 Install Command: npm install   (default)
 Output Dir:      .next          (default)
 ```
@@ -178,7 +184,7 @@ npx vercel env pull .env.production.local
 ### Passo 2 — Rodar seed em produção
 
 ```bash
-ALLOW_PROD_SEED=true npx dotenv -e .env.production.local -- npx prisma db seed
+ALLOW_PROD_SEED=true SEED_CONFIRM=production npx dotenv -e .env.production.local -- npx prisma db seed
 ```
 
 O que cria (via `upsert` — idempotente):
@@ -209,3 +215,16 @@ As senhas vêm das env vars de produção — nenhuma senha fraca é gerada em n
 ## Workflow após o primeiro deploy
 
 Todo push para `main` dispara deploy automático. O build command executa `prisma migrate deploy` a cada deploy — se não houver migrations pendentes, o comando é no-op e seguro. Se houver, aplica somente o que está nos arquivos versionados.
+
+---
+
+## Troca de domínio no futuro
+
+Ao apontar um domínio próprio (ex: `app.relatec.com.br`), atualizar obrigatoriamente as seguintes env vars no Vercel (Production):
+
+| Variável | Novo valor |
+|---|---|
+| `NEXTAUTH_URL` | `https://app.relatec.com.br` |
+| `AUTH_URL` | `https://app.relatec.com.br` |
+
+Sem essa atualização, os redirects de autenticação e os callbacks do NextAuth continuarão apontando para o domínio antigo, causando falhas de login em produção.
