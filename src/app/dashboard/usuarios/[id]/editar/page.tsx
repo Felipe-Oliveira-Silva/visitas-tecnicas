@@ -6,13 +6,14 @@ import { UserForm } from '../../user-form'
 import Link from 'next/link'
 import { ChevronLeft, Pencil } from 'lucide-react'
 
-export default async function EditarUsuarioPage({ params }: { params: { id: string } }) {
+export default async function EditarUsuarioPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
 
   if (!session || session.user.role !== 'ADMIN' && session.user.role !== 'SUPERADMIN') redirect('/dashboard')
 
   const user = await prisma.user.findFirst({
-    where: { id: params.id, companyId: session.user.companyId },
+    where: { id, companyId: session.user.companyId },
     select: { id: true, name: true, email: true, role: true },
   })
 

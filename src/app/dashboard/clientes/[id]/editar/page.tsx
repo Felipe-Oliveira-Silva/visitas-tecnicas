@@ -6,13 +6,14 @@ import { ClientForm } from '../../client-form'
 import Link from 'next/link'
 import { ChevronLeft, Pencil } from 'lucide-react'
 
-export default async function EditarClientePage({ params }: { params: { id: string } }) {
+export default async function EditarClientePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
 
   if (!session || session.user.role === 'READER') redirect('/dashboard')
 
   const client = await prisma.client.findFirst({
-    where: { id: params.id, companyId: session.user.companyId },
+    where: { id, companyId: session.user.companyId },
   })
 
   if (!client) notFound()
