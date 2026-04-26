@@ -1,11 +1,12 @@
 import { prisma } from '@/lib/prisma'
+import { BILLING_PLANS, PlanKey } from './billing'
 
-type PlanKey = 'start' | 'pro' | 'enterprise'
+export type { PlanKey } from './billing'
 
 export const PLAN_LIMITS: Record<PlanKey, { visitsPerMonth: number | null; users: number | null }> = {
-  start:      { visitsPerMonth: 30,   users: 2    },
-  pro:        { visitsPerMonth: 300,  users: 10   },
-  enterprise: { visitsPerMonth: null, users: null },
+  start:      { visitsPerMonth: BILLING_PLANS.start.visitsPerMonth,      users: BILLING_PLANS.start.users      },
+  pro:        { visitsPerMonth: BILLING_PLANS.pro.visitsPerMonth,        users: BILLING_PLANS.pro.users        },
+  enterprise: { visitsPerMonth: BILLING_PLANS.enterprise.visitsPerMonth, users: BILLING_PLANS.enterprise.users },
 }
 
 function getMonthRangeUTC(): { gte: Date; lt: Date } {
@@ -21,8 +22,8 @@ async function getCompanyPlan(companyId: string): Promise<PlanKey> {
     select: { plan: true },
   })
   if (!company) throw new Error(`Company not found: ${companyId}`)
-  const plan = company.plan as string
-  if (!PLAN_LIMITS[plan as PlanKey]) throw new Error(`Unknown plan: ${plan}`)
+  const plan = company.plan
+  if (!plan || !PLAN_LIMITS[plan as PlanKey]) throw new Error(`No active plan for company: ${companyId}`)
   return plan as PlanKey
 }
 
