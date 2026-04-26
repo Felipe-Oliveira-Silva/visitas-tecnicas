@@ -162,8 +162,8 @@ export default function LoginPage() {
           justifyContent: "center",
           padding: "2.5rem",
         }}>
-          <p style={{ fontSize: "20px", fontWeight: 700, color: "#e2eaf4", marginBottom: "4px", letterSpacing: "-0.3px" }}>
-            Bem-vindo de volta
+          <p style={{ fontSize: "30px", fontWeight: 700, color: "#e2eaf4", marginBottom: "4px", letterSpacing: "-0.3px" }}>
+            Bem-vindo 
           </p>
           <p style={{ fontSize: "13px", color: "#5a7a96", marginBottom: "2rem" }}>
             Acesse sua conta para continuar

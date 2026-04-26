@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Users, Building2, ClipboardList, FileText, TrendingUp, CheckCircle2, Clock, XCircle } from 'lucide-react'
 import { getUsage, PLAN_LIMITS } from '@/lib/plan-limits'
 import { UsageBar } from '@/components/usage-bar'
+import { CreditCard, AlertTriangle } from 'lucide-react'
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -41,7 +42,9 @@ export default async function DashboardPage() {
     enterprise: 'Premium',
   }
   const planName = planNames[companyData!.plan] ?? companyData!.plan
-
+  const userPct = limits.users
+    ? Math.round((usage.activeUsers / limits.users) * 100)
+    : null
   const cards = [
     {
       label: 'Usuários',
@@ -167,6 +170,12 @@ export default async function DashboardPage() {
             current={usage.activeUsers}
             limit={limits.users}
           />
+            <div className="flex items-center gap-2 mt-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2 text-yellow-400 text-xs">
+              <AlertTriangle size={14} />
+              {userPct! >= 100
+                ? 'Limite de usuários atingido. Faça upgrade para adicionar mais.'
+                : `Você usou ${userPct}% do limite de usuários. Considere fazer upgrade em breve.`}
+            </div>
         </div>
         <p className="text-slate-500 text-xs mt-4">
           Reinicia em {daysUntilReset} dia{daysUntilReset !== 1 ? 's' : ''}
