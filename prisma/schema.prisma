@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── EMPRESA (TENANT) ────────────────────────────────────────────────────────
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  cnpj      String?
+  phone     String?
+  email     String?
+  logo      String?
+  address   String?
+  plan      String   @default("start")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users    User[]
+  clients  Client[]
+  visits   Visit[]
+  reports  Report[]
+}
+
+// ─── USUÁRIO ─────────────────────────────────────────────────────────────────
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(TECHNICIAN)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  statusHistory VisitStatusHistory[]
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  visits  Visit[]
+  reports Report[]
+}
+
+enum Role {
+  ADMIN
+  TECHNICIAN
+  READER
+  SUPERADMIN
+}
+
+// ─── CLIENTE ─────────────────────────────────────────────────────────────────
+model Client {
+  id           String   @id @default(cuid())
+  name         String
+  fantasyName  String?
+  cnpj         String?
+  phone        String?
+  email        String?
+  address      String?
+  neighborhood String?
+  city         String?
+  state        String?
+  notes        String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  visits Visit[]
+}
+
+// ─── VISITA ───────────────────────────────────────────────────────────────────
+model Visit {
+  id                  String      @id @default(cuid())
+  scheduledAt         DateTime
+  realizedAt          DateTime?
+  status              VisitStatus @default(SCHEDULED)
+  notRealizedReason   String?
+  observations        String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  statusHistory VisitStatusHistory[]
+  companyId    String
+  company      Company @relation(fields: [companyId], references: [id])
+
+  clientId     String
+  client       Client  @relation(fields: [clientId], references: [id])
+
+  technicianId String
+  technician   User    @relation(fields: [technicianId], references: [id])
+
+  report Report?
+}
+
+enum VisitStatus {
+  SCHEDULED
+  REALIZED
+  NOT_REALIZED
+}
+
+// ─── RELATÓRIO ────────────────────────────────────────────────────────────────
+model Report {
+  id              String       @id @default(cuid())
+  status          ReportStatus @default(DRAFT)
+  observations    String?
+  checklistData   Json?
+  measurementData Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  visitId String @unique
+  visit   Visit  @relation(fields: [visitId], references: [id])
+
+  filledById String
+  filledBy   User   @relation(fields: [filledById], references: [id])
+
+  attachments Attachment[]
+  signature   Signature?
+  pdf         ReportPdf?
+}
+
+enum ReportStatus {
+  DRAFT
+  FINALIZED
+  SIGNED
+}
+
+// ─── ANEXO ────────────────────────────────────────────────────────────────────
+model Attachment {
+  id           String         @id @default(cuid())
+  type         AttachmentType
+  originalName String
+  sizeBytes    Int
+  mimeType     String
+  storagePath  String
+  createdAt    DateTime       @default(now())
+
+  companyId String
+  reportId  String
+  report    Report @relation(fields: [reportId], references: [id])
+}
+
+enum AttachmentType {
+  PHOTO
+  PDF
+}
+
+// ─── ASSINATURA ───────────────────────────────────────────────────────────────
+model Signature {
+  id            String   @id @default(cuid())
+  signerName    String
+  signerDoc     String?
+  imagePath     String
+  signedAt      DateTime @default(now())
+  evidenceData  Json?
+
+  companyId String
+  reportId  String @unique
+  report    Report @relation(fields: [reportId], references: [id])
+}
+
+// ─── PDF GERADO ───────────────────────────────────────────────────────────────
+model ReportPdf {
+  id        String   @id @default(cuid())
+  pdfPath   String
+  createdAt DateTime @default(now())
+
+  companyId String
+  reportId  String @unique
+  report    Report @relation(fields: [reportId], references: [id])
+}
+
+// ─── HISTÓRICO DE STATUS DA VISITA ───────────────────────────────────────────
+model VisitStatusHistory {
+  id        String      @id @default(cuid())
+  visitId   String
+  status    VisitStatus
+  changedBy String
+  note      String?
+  createdAt DateTime    @default(now())
+
+  visit Visit @relation(fields: [visitId], references: [id])
+  user  User  @relation(fields: [changedBy], references: [id])
+
+  @@map("visit_status_history")
+}
