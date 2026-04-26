@@ -146,41 +146,45 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Uso do Plano */}
-      <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-white font-semibold">
-            Uso do Plano — <span className="text-cyan-400">{planName}</span>
-          </h3>
-          <Link
-            href="/dashboard/plano"
-            className="text-sm text-slate-400 hover:text-cyan-400 transition-colors"
-          >
-            Ver detalhes →
-          </Link>
+      {/* Uso do Plano — oculto para planos sem limites (enterprise) */}
+      {(limits.visitsPerMonth !== null || limits.users !== null) && (
+        <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-white font-semibold">
+              Uso do Plano — <span className="text-cyan-400">{planName}</span>
+            </h3>
+            <Link
+              href="/dashboard/plano"
+              className="text-sm text-slate-400 hover:text-cyan-400 transition-colors"
+            >
+              Ver detalhes →
+            </Link>
+          </div>
+          <div className="space-y-4">
+            <UsageBar
+              label="Visitas este mês"
+              current={usage.visitsThisMonth}
+              limit={limits.visitsPerMonth}
+            />
+            <UsageBar
+              label="Usuários ativos"
+              current={usage.activeUsers}
+              limit={limits.users}
+            />
+            {userPct !== null && (
+              <div className="flex items-center gap-2 mt-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2 text-yellow-400 text-xs">
+                <AlertTriangle size={14} />
+                {userPct >= 100
+                  ? 'Limite de usuários atingido. Faça upgrade para adicionar mais.'
+                  : `Você usou ${userPct}% do limite de usuários. Considere fazer upgrade em breve.`}
+              </div>
+            )}
+          </div>
+          <p className="text-slate-500 text-xs mt-4">
+            Reinicia em {daysUntilReset} dia{daysUntilReset !== 1 ? 's' : ''}
+          </p>
         </div>
-        <div className="space-y-4">
-          <UsageBar
-            label="Visitas este mês"
-            current={usage.visitsThisMonth}
-            limit={limits.visitsPerMonth}
-          />
-          <UsageBar
-            label="Usuários ativos"
-            current={usage.activeUsers}
-            limit={limits.users}
-          />
-            <div className="flex items-center gap-2 mt-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2 text-yellow-400 text-xs">
-              <AlertTriangle size={14} />
-              {userPct! >= 100
-                ? 'Limite de usuários atingido. Faça upgrade para adicionar mais.'
-                : `Você usou ${userPct}% do limite de usuários. Considere fazer upgrade em breve.`}
-            </div>
-        </div>
-        <p className="text-slate-500 text-xs mt-4">
-          Reinicia em {daysUntilReset} dia{daysUntilReset !== 1 ? 's' : ''}
-        </p>
-      </div>
+      )}
     </div>
   )
 }
