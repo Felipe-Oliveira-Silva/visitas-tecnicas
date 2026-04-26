@@ -48,3 +48,6 @@ next-env.d.ts
 
 # uploaded files (binaries generated at runtime)
 /public/uploads/
+
+.vercel
+.env*.local
