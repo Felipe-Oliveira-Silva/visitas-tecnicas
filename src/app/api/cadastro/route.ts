@@ -34,7 +34,7 @@ export async function POST(request: Request) {
         name: nomeEmpresa,
         phone: phone || null,
         cnpj: cnpj || null,
-        plan: 'start',
+        plan: null,
         active: false,
         users: {
           create: {
