@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Users, Building2, ClipboardList, FileText, TrendingUp, CheckCircle2, Clock, XCircle } from 'lucide-react'
 import { getUsage, PLAN_LIMITS } from '@/lib/plan-limits'
+import { PlanKey } from '@/lib/billing'
 import { UsageBar } from '@/components/usage-bar'
 import { CreditCard, AlertTriangle } from 'lucide-react'
 
@@ -30,7 +31,7 @@ export default async function DashboardPage() {
     getUsage(companyId),
     prisma.company.findUnique({ where: { id: companyId }, select: { plan: true, name: true } }),
   ])
-  const limits = PLAN_LIMITS[companyData!.plan as 'start' | 'pro' | 'enterprise']
+  const limits = PLAN_LIMITS[(companyData!.plan ?? 'start') as PlanKey]
 
   const now = new Date()
   const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
@@ -41,7 +42,7 @@ export default async function DashboardPage() {
     pro: 'Profissional',
     enterprise: 'Premium',
   }
-  const planName = planNames[companyData!.plan] ?? companyData!.plan
+  const planName = (companyData?.plan ? planNames[companyData.plan] : null) ?? companyData?.plan ?? 'start'
   const userPct = limits.users
     ? Math.round((usage.activeUsers / limits.users) * 100)
     : null
