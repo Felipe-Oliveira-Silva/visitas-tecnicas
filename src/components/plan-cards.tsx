@@ -100,13 +100,22 @@ export function PlanCards({ currentPlan, currentSubscription }: PlanCardsProps) 
                 >
                   Plano atual
                 </button>
-              ) : isPending && currentSubscription?.checkoutUrl ? (
-                <a
-                  href={currentSubscription.checkoutUrl}
-                  className="block text-center bg-amber-500 hover:bg-amber-400 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors"
-                >
-                  Retomar pagamento
-                </a>
+              ) : isPending ? (
+                currentSubscription?.checkoutUrl ? (
+                  <a
+                    href={currentSubscription.checkoutUrl}
+                    className="block text-center bg-amber-500 hover:bg-amber-400 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                  >
+                    Retomar pagamento
+                  </a>
+                ) : (
+                  <button
+                    disabled
+                    className="block w-full text-center py-2.5 rounded-lg text-sm font-semibold bg-slate-700 text-slate-500 cursor-not-allowed"
+                  >
+                    Pagamento pendente
+                  </button>
+                )
               ) : (
                 <button
                   onClick={() => handleSubscribe(plan.key)}

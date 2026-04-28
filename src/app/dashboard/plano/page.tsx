@@ -118,7 +118,7 @@ export default async function PlanoPage() {
               <p className="text-slate-400 text-sm mt-1">R${planInfo.price}/mês</p>
             )}
           </div>
-          {planInfo && (
+          {planInfo && subscription?.status === 'ACTIVE' && (
             <span className="bg-emerald-500/15 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-500/30">
               Ativo
             </span>
