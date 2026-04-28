@@ -6,11 +6,11 @@ import { Users, Building2, ClipboardList, FileText, TrendingUp, CheckCircle2, Cl
 import { getUsage, PLAN_LIMITS } from '@/lib/plan-limits'
 import { PlanKey } from '@/lib/billing'
 import { UsageBar } from '@/components/usage-bar'
-import { CreditCard, AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 
 export default async function DashboardPage() {
   const session = await auth()
-  const companyId = session?.user?.companyId!
+  const companyId = session!.user.companyId
 
   const [totalUsuarios, totalClientes, totalVisitas, totalRelatorios] = await Promise.all([
     prisma.user.count({ where: { companyId } }),
@@ -42,7 +42,7 @@ export default async function DashboardPage() {
     pro: 'Profissional',
     enterprise: 'Premium',
   }
-  const planName = (companyData?.plan ? planNames[companyData.plan] : null) ?? companyData?.plan ?? 'start'
+  const planName = planNames[companyData!.plan!] ?? companyData!.plan!
   const userPct = limits.users
     ? Math.round((usage.activeUsers / limits.users) * 100)
     : null
