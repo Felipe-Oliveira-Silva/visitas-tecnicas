@@ -35,8 +35,8 @@ export default async function PlanoPage() {
     pro: 'R$109/mês',
     enterprise: 'R$249/mês',
   }
-  const planName = planNames[company!.plan] ?? company!.plan
-  const planPrice = planPrices[company!.plan] ?? ''
+  const planName = planNames[company!.plan ?? ''] ?? company!.plan
+  const planPrice = planPrices[company!.plan ?? ''] ?? ''
 
   const now = new Date()
   const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
@@ -120,7 +120,7 @@ export default async function PlanoPage() {
       {/* Bloco 3 — Upgrade */}
       <div className="space-y-4">
         <h3 className="text-white font-semibold">Fazer upgrade</h3>
-        <PlanCards userName={session.user.name ?? null} currentPlan={company!.plan} />
+        <PlanCards userName={session.user.name ?? null} currentPlan={company!.plan ?? undefined} />
       </div>
     </div>
   )

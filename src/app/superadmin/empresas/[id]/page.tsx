@@ -77,7 +77,7 @@ export default async function EmpresaDetalhePage({
         <div>
           <p className="text-slate-400 text-xs mb-1">Plano atual</p>
           <p className="text-slate-100 text-sm font-medium">
-            {planLabel[empresa.plan] ?? empresa.plan}
+            {planLabel[empresa.plan ?? ''] ?? empresa.plan}
           </p>
         </div>
         <div>

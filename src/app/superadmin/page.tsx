@@ -69,8 +69,8 @@ export default async function SuperAdminPage() {
                 <td className="px-4 py-3 text-slate-400">
                   {empresa.cnpj || "—"}
                 </td>
-                <td className={`px-4 py-3 font-medium ${planColor[empresa.plan] ?? "text-slate-400"}`}>
-                  {planLabel[empresa.plan] ?? empresa.plan}
+                <td className={`px-4 py-3 font-medium ${planColor[empresa.plan ?? ''] ?? "text-slate-400"}`}>
+                  {planLabel[empresa.plan ?? ''] ?? empresa.plan}
                 </td>
                 <td className="px-4 py-3 text-slate-400">
                   {empresa._count.users}
