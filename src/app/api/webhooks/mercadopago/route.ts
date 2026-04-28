@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { createHmac } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 
 const MP_API = 'https://api.mercadopago.com'
 
@@ -26,7 +26,7 @@ function validateSignature(
   if (!ts || !v1) return false
   const manifest = `id:${dataId};request-id:${xReqId};ts:${ts};`
   const hmac = createHmac('sha256', secret).update(manifest).digest('hex')
-  return hmac === v1
+  return timingSafeEqual(Buffer.from(hmac), Buffer.from(v1))
 }
 
 type MPPreapproval = {
@@ -44,7 +44,10 @@ type WebhookPayload = {
 export async function POST(req: NextRequest) {
   const body = await req.json() as WebhookPayload
 
-  const mpId = body.data?.id ?? ''
+  const mpId = body.data?.id
+  if (!mpId || typeof mpId !== 'string') {
+    return NextResponse.json({ error: 'Bad payload' }, { status: 400 })
+  }
   const secret = process.env.MP_WEBHOOK_SECRET
 
   if (secret) {
