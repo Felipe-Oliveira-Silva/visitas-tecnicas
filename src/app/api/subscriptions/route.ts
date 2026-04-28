@@ -32,17 +32,20 @@ export async function POST(req: Request) {
 
   const plan = BILLING_PLANS[planKey]
   const companyId = session.user.companyId
+  if (!companyId) return NextResponse.json({ error: 'Empresa não encontrada' }, { status: 400 })
 
-  const admin = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { email: true },
+  const existing = await prisma.subscription.findFirst({
+    where: { companyId, planKey, status: 'PENDING' },
+    orderBy: { createdAt: 'desc' },
   })
-  if (!admin) return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
+  if (existing?.checkoutUrl) {
+    return NextResponse.json({ checkoutUrl: existing.checkoutUrl })
+  }
 
   const mpData = await mpPost('/preapproval', {
     reason: plan.description,
     external_reference: `${companyId}:${planKey}`,
-    payer_email: admin.email,
+    payer_email: session.user.email!,
     auto_recurring: {
       frequency: plan.frequency,
       frequency_type: plan.frequencyType,
