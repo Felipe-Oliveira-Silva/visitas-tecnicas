@@ -25,8 +25,10 @@ function validateSignature(
   const { ts, v1 } = parts as { ts?: string; v1?: string }
   if (!ts || !v1) return false
   const manifest = `id:${dataId};request-id:${xReqId};ts:${ts};`
-  const hmac = createHmac('sha256', secret).update(manifest).digest('hex')
-  return timingSafeEqual(Buffer.from(hmac), Buffer.from(v1))
+  const hBuf = Buffer.from(createHmac('sha256', secret).update(manifest).digest('hex'))
+  const vBuf = Buffer.from(v1)
+  if (hBuf.length !== vBuf.length) return false
+  return timingSafeEqual(hBuf, vBuf)
 }
 
 type MPPreapproval = {
