@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation"
 
 interface Props {
   empresaId: string
-  planAtual: string
+  planAtual: string | null
   activeAtual: boolean
 }
 
 export default function EmpresaActions({ empresaId, planAtual, activeAtual }: Props) {
   const router = useRouter()
-  const [plan, setPlan] = useState(planAtual)
+  const [plan, setPlan] = useState(planAtual ?? 'start')
   const [active, setActive] = useState(activeAtual)
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState("")

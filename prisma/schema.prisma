@@ -73,6 +73,8 @@ model Subscription {
   updatedAt        DateTime           @updatedAt
 
   company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, status])
 }
 
 // ─── CLIENTE ─────────────────────────────────────────────────────────────────
