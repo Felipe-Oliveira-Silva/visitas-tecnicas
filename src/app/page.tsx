@@ -207,7 +207,7 @@ export default async function HomePage() {
         <h2 className="text-2xl font-bold text-slate-100 mb-10">
           Escolha o plano ideal para sua empresa
         </h2>
-        <PlanCards userName={userName} />
+        <PlanCards />
         {session && !companyActive && (
           <p className="text-slate-500 text-sm mt-8">
             Após o contato, sua conta será ativada em até 24h.
