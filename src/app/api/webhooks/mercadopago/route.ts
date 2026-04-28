@@ -44,11 +44,7 @@ type WebhookPayload = {
 export async function POST(req: NextRequest) {
   const body = await req.json() as WebhookPayload
 
-  if (body.type !== 'subscription_preapproval') {
-    return NextResponse.json({ received: true })
-  }
-
-  const mpId = body.data.id
+  const mpId = body.data?.id ?? ''
   const secret = process.env.MP_WEBHOOK_SECRET
 
   if (secret) {
@@ -61,6 +57,10 @@ export async function POST(req: NextRequest) {
     if (!valid) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
+  }
+
+  if (body.type !== 'subscription_preapproval') {
+    return NextResponse.json({ received: true })
   }
 
   // Fetch canonical state — never trust webhook payload alone
