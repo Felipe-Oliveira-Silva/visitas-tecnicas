@@ -5,11 +5,15 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, PenLine, Trash2, CheckCircle, Loader2, AlertCircle } from 'lucide-react'
 
+// Fixed CSS height for the signature area — tall enough for comfortable finger signing
+const CANVAS_CSS_HEIGHT = 200
+
 export default function AssinarRelatorioPage() {
   const params = useParams()
   const router = useRouter()
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const isDrawing = useRef(false)
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
 
@@ -18,7 +22,6 @@ export default function AssinarRelatorioPage() {
   const [isEmpty, setIsEmpty] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [reportStatus, setReportStatus] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -29,36 +32,63 @@ export default function AssinarRelatorioPage() {
           router.replace(`/dashboard/relatorios/${params.id}`)
           return
         }
-        setReportStatus(data.status)
         setLoading(false)
       })
   }, [])
 
-  // Canvas setup
-  useEffect(() => {
+  // Initialise (or re-initialise) canvas dimensions and context.
+  // Setting canvas.width/height resets the context transform, so we must
+  // re-apply ctx.scale(dpr, dpr) every call.  After this, all drawing
+  // commands work in CSS-pixel coordinates — no manual scale needed in getPos.
+  function setupCanvas() {
     const canvas = canvasRef.current
-    if (!canvas) return
+    const wrapper = wrapperRef.current
+    if (!canvas || !wrapper) return
+
+    const cssWidth = wrapper.clientWidth
+    if (cssWidth === 0) return
+
+    const dpr = window.devicePixelRatio || 1
+
+    canvas.width  = Math.round(cssWidth * dpr)
+    canvas.height = Math.round(CANVAS_CSS_HEIGHT * dpr)
+    canvas.style.width  = cssWidth + 'px'
+    canvas.style.height = CANVAS_CSS_HEIGHT + 'px'
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    ctx.strokeStyle = '#1e293b' 
-    ctx.lineWidth = 2.5
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
+    ctx.scale(dpr, dpr)
+    ctx.strokeStyle = '#1e293b'
+    ctx.lineWidth   = 2.5
+    ctx.lineCap     = 'round'
+    ctx.lineJoin    = 'round'
+
+    setIsEmpty(true)
+  }
+
+  useEffect(() => {
+    if (loading) return
+
+    setupCanvas()
+
+    function handleResize() { setupCanvas() }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [loading])
 
+  // Returns coordinates in CSS pixels.  Works correctly because ctx is
+  // already scaled by DPR via setupCanvas, so no manual multiplication needed.
   function getPos(e: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) {
     const rect = canvas.getBoundingClientRect()
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
     if ('touches' in e) {
       return {
-        x: (e.touches[0].clientX - rect.left) * scaleX,
-        y: (e.touches[0].clientY - rect.top) * scaleY,
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top,
       }
     }
     return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY,
+      x: (e as MouseEvent).clientX - rect.left,
+      y: (e as MouseEvent).clientY - rect.top,
     }
   }
 
@@ -95,7 +125,10 @@ export default function AssinarRelatorioPage() {
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    // getBoundingClientRect gives CSS dimensions; with ctx.scale(dpr,dpr)
+    // clearRect in CSS coords clears the full physical canvas correctly.
+    const { width, height } = canvas.getBoundingClientRect()
+    ctx.clearRect(0, 0, width, height)
     setIsEmpty(true)
   }
 
@@ -150,7 +183,7 @@ export default function AssinarRelatorioPage() {
       <div className="flex items-center gap-3">
         <Link
           href={`/dashboard/relatorios/${params.id}`}
-          className="text-slate-400 hover:text-slate-100 transition-colors"
+          className="text-slate-400 hover:text-slate-100 transition-colors p-2 min-h-[44px] flex items-center"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
@@ -184,7 +217,7 @@ export default function AssinarRelatorioPage() {
               value={signerName}
               onChange={e => setSignerName(e.target.value)}
               placeholder="Nome de quem está assinando"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-3 min-h-[44px] text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
             />
           </div>
 
@@ -197,7 +230,7 @@ export default function AssinarRelatorioPage() {
               value={signerDoc}
               onChange={e => setSignerDoc(e.target.value)}
               placeholder="CPF, RG ou outro documento"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-3 min-h-[44px] text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
             />
           </div>
         </div>
@@ -209,18 +242,19 @@ export default function AssinarRelatorioPage() {
           <h2 className="text-slate-100 font-semibold">Assinatura</h2>
           <button
             onClick={clearCanvas}
-            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-400 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-400 transition-colors px-2 py-2 min-h-[44px]"
           >
             <Trash2 className="w-3.5 h-3.5" />
             Limpar
           </button>
         </div>
 
-        <div className="relative border-2 border-dashed border-slate-600 rounded-lg overflow-hidden bg-slate-950">
+        <div
+          ref={wrapperRef}
+          className="relative border-2 border-dashed border-slate-600 rounded-lg overflow-hidden bg-slate-950"
+        >
           <canvas
             ref={canvasRef}
-            width={600}
-            height={200}
             onMouseDown={startDraw}
             onMouseMove={draw}
             onMouseUp={stopDraw}
@@ -228,8 +262,7 @@ export default function AssinarRelatorioPage() {
             onTouchStart={startDraw}
             onTouchMove={draw}
             onTouchEnd={stopDraw}
-            className="w-full cursor-crosshair touch-none"
-            style={{ display: 'block' }}
+            className="block cursor-crosshair touch-none"
           />
           {isEmpty && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -242,17 +275,17 @@ export default function AssinarRelatorioPage() {
       </div>
 
       {/* Ações */}
-      <div className="flex justify-end gap-3">
+      <div className="flex flex-wrap justify-end gap-3">
         <Link
           href={`/dashboard/relatorios/${params.id}`}
-          className="px-4 py-2 bg-slate-800 text-slate-100 rounded-lg border border-slate-700 hover:border-slate-500 transition-colors text-sm font-medium"
+          className="px-4 py-3 min-h-[44px] bg-slate-800 text-slate-100 rounded-lg border border-slate-700 hover:border-slate-500 transition-colors text-sm font-medium flex items-center"
         >
           Cancelar
         </Link>
         <button
           onClick={handleSign}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 transition-colors text-sm font-semibold disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-3 min-h-[44px] bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 transition-colors text-sm font-semibold disabled:opacity-50"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
           Confirmar Assinatura
