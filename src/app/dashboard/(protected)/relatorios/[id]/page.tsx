@@ -125,7 +125,7 @@ export default function ReportDetailPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/relatorios"
@@ -145,11 +145,11 @@ export default function ReportDetailPage() {
         </div>
 
         {/* Ações */}
-        <div className="flex gap-2 shrink-0">
+        <div className="flex flex-wrap gap-2 sm:shrink-0">
           {canEdit && (
             <Link
               href={`/dashboard/relatorios/${report.id}/editar`}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-100 rounded-lg border border-slate-700 hover:border-slate-500 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-3 min-h-[44px] bg-slate-800 text-slate-100 rounded-lg border border-slate-700 hover:border-slate-500 transition-colors text-sm font-medium"
             >
               <PenLine className="w-4 h-4" />
               Editar
@@ -159,7 +159,7 @@ export default function ReportDetailPage() {
             <button
               onClick={handleFinalizar}
               disabled={finalizing}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm font-medium disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-3 min-h-[44px] bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm font-medium disabled:opacity-50"
             >
               {finalizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
               Finalizar
@@ -168,7 +168,7 @@ export default function ReportDetailPage() {
           {canSign && (
             <Link
               href={`/dashboard/relatorios/${report.id}/assinar`}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-3 min-h-[44px] bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 transition-colors text-sm font-medium"
             >
               <PenLine className="w-4 h-4" />
               Assinar
@@ -190,7 +190,7 @@ export default function ReportDetailPage() {
           <Calendar className="w-4 h-4 text-cyan-500" />
           Dados da Visita
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <InfoRow label="Cliente" value={report.visit.client.name} />
           <InfoRow label="Telefone" value={report.visit.client.phone} />
           <InfoRow label="E-mail do cliente" value={report.visit.client.email} />
@@ -225,7 +225,7 @@ export default function ReportDetailPage() {
           Dados do Relatório
         </h2>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <InfoRow label="Preenchido por" value={report.filledBy.name} />
           <InfoRow
             label="Criado em"
@@ -272,7 +272,7 @@ export default function ReportDetailPage() {
             <Ruler className="w-4 h-4 text-cyan-500" />
             Medições
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {Object.entries(report.measurementData).map(([key, value]) => (
               <div key={key} className="bg-slate-800 rounded-lg p-3 border border-slate-700">
                 <span className="text-xs text-slate-500 block">{key}</span>
@@ -290,7 +290,7 @@ export default function ReportDetailPage() {
             <PenLine className="w-4 h-4 text-emerald-500" />
             Assinatura
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <InfoRow label="Signatário" value={report.signature.signerName} />
             <InfoRow label="Documento" value={report.signature.signerDoc} />
             <InfoRow
@@ -302,12 +302,12 @@ export default function ReportDetailPage() {
           </div>
           <div className="mt-3">
             <span className="text-xs text-slate-500 uppercase tracking-wide block mb-2">Imagem da assinatura</span>
-            <div className="bg-white rounded-lg p-2 inline-block">
+            <div className="bg-white rounded-lg p-2 inline-block max-w-full">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/api/relatorios/${report.id}/signature-image`}
                 alt="Assinatura"
-                className="max-h-24 object-contain"
+                className="max-h-24 max-w-full object-contain"
               />
             </div>
           </div>

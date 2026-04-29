@@ -67,17 +67,17 @@ async function handleConfirm() {
 
   return (
     <>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={() => openModal('REALIZED')}
-          className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-500 transition-colors font-medium"
+          className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-3 min-h-[44px] rounded-lg text-sm hover:bg-emerald-500 transition-colors font-medium"
         >
           <CheckCircle size={14} />
           Marcar Realizada
         </button>
         <button
           onClick={() => openModal('NOT_REALIZED')}
-          className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-500 transition-colors font-medium"
+          className="flex items-center gap-2 bg-red-600 text-white px-4 py-3 min-h-[44px] rounded-lg text-sm hover:bg-red-500 transition-colors font-medium"
         >
           <XCircle size={14} />
           Não Realizada
@@ -132,14 +132,14 @@ async function handleConfirm() {
               <button
                 onClick={() => setShowModal(false)}
                 disabled={loading}
-                className="px-4 py-2 bg-slate-800 text-slate-100 rounded-lg text-sm border border-slate-700 hover:border-slate-500 transition-colors disabled:opacity-50"
+                className="px-4 py-3 min-h-[44px] bg-slate-800 text-slate-100 rounded-lg text-sm border border-slate-700 hover:border-slate-500 transition-colors disabled:opacity-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={loading || (newStatus === 'NOT_REALIZED' && !reason.trim())}
-                className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-slate-950 rounded-lg text-sm font-semibold disabled:opacity-50 hover:bg-cyan-400 transition-colors"
+                className="flex items-center gap-2 px-4 py-3 min-h-[44px] bg-cyan-500 text-slate-950 rounded-lg text-sm font-semibold disabled:opacity-50 hover:bg-cyan-400 transition-colors"
               >
                 {loading && <Loader2 size={14} className="animate-spin" />}
                 {loading ? 'Salvando...' : 'Confirmar'}

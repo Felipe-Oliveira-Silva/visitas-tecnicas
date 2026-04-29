@@ -19,7 +19,7 @@ export default function GenerateReportButton({ visitId, existingReportId }: Gene
     return (
       <button
         onClick={() => router.push(`/dashboard/relatorios/${existingReportId}`)}
-        className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-100 rounded-lg border border-slate-700 hover:border-cyan-500/50 transition-colors text-sm font-medium"
+        className="flex items-center gap-2 px-4 py-3 min-h-[44px] bg-slate-800 text-slate-100 rounded-lg border border-slate-700 hover:border-cyan-500/50 transition-colors text-sm font-medium"
       >
         <FileText className="w-4 h-4 text-cyan-500" />
         Ver Relatório
@@ -52,7 +52,7 @@ export default function GenerateReportButton({ visitId, existingReportId }: Gene
       <button
         onClick={handleGenerate}
         disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-slate-950 rounded-lg hover:bg-cyan-400 transition-colors text-sm font-semibold disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-3 min-h-[44px] bg-cyan-500 text-slate-950 rounded-lg hover:bg-cyan-400 transition-colors text-sm font-semibold disabled:opacity-50"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
         Gerar Relatório

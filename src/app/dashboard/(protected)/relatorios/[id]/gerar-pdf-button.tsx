@@ -37,11 +37,11 @@ export function GerarPdfButton({ reportId, hasPdf, status }: GerarPdfButtonProps
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={handleGerar}
           disabled={loading}
-          className="flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-3 min-h-[44px] text-sm font-medium text-white hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? (
             <>
@@ -63,7 +63,7 @@ export function GerarPdfButton({ reportId, hasPdf, status }: GerarPdfButtonProps
             href={`/api/relatorios/${reportId}/pdf`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 transition-colors"
+            className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 min-h-[44px] text-sm font-medium text-slate-100 hover:bg-slate-700 transition-colors"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

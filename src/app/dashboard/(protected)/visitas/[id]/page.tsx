@@ -40,9 +40,9 @@ export default async function VisitaDetalhePage({ params }: { params: Promise<{ 
   return (
     <div className="max-w-3xl space-y-5">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <Link href="/dashboard/visitas" className="text-sm text-slate-400 hover:text-slate-100 transition-colors mb-1 inline-block">
+          <Link href="/dashboard/visitas" className="text-sm text-slate-400 hover:text-slate-100 transition-colors mb-1 inline-block py-2">
             ← Voltar para visitas
           </Link>
           <h1 className="text-2xl font-bold text-slate-100">
@@ -126,7 +126,7 @@ export default async function VisitaDetalhePage({ params }: { params: Promise<{ 
           <ChangeStatusButton visitId={visit.id} currentStatus={visit.status} />
           <Link
             href={`/dashboard/visitas/${visit.id}/editar`}
-            className="flex items-center gap-2 border border-slate-700 text-slate-100 px-4 py-2 rounded-lg text-sm hover:border-slate-500 transition-colors"
+            className="flex items-center gap-2 border border-slate-700 text-slate-100 px-4 py-3 min-h-[44px] rounded-lg text-sm hover:border-slate-500 transition-colors"
           >
             <Pencil size={14} /> Editar
           </Link>
