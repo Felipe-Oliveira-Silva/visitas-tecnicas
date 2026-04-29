@@ -118,9 +118,10 @@ export default function ReportDetailPage() {
     )
   }
 
-  const canEdit = report.status === 'DRAFT' && ['ADMIN', 'TECHNICIAN'].includes(userRole)
-  const canFinalize = report.status === 'DRAFT' && ['ADMIN', 'TECHNICIAN'].includes(userRole)
-  const canSign = report.status === 'FINALIZED' && ['ADMIN', 'TECHNICIAN'].includes(userRole)
+  const canWrite = ['ADMIN', 'TECHNICIAN', 'SUPERADMIN'].includes(userRole)
+  const canEdit = report.status === 'DRAFT' && canWrite
+  const canFinalize = report.status === 'DRAFT' && canWrite
+  const canSign = report.status === 'FINALIZED' && canWrite
 
   return (
     <div className="space-y-6 max-w-4xl">
