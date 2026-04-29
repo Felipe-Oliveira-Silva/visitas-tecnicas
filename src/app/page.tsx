@@ -150,17 +150,6 @@ export default async function HomePage() {
             Ver planos
           </a>
         </div>
-        {/* Screenshot placeholder */}
-        <div className="max-w-2xl mx-auto bg-[#0d1b2a] border border-[#1e3a5f] rounded-xl p-6">
-          <div className="flex gap-1.5 mb-4">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500" />
-            <div className="w-3 h-3 rounded-full bg-green-500" />
-          </div>
-          <div className="bg-slate-800 rounded-lg p-12 text-slate-600 text-sm">
-            Screenshot do sistema
-          </div>
-        </div>
       </section>
 
       {/* PÚBLICO-ALVO */}
