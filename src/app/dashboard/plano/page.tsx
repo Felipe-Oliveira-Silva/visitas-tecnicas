@@ -56,11 +56,11 @@ export default async function PlanoPage() {
     }
     if (subscription.status === 'PENDING') {
       return (
-        <div className="flex items-center gap-3 text-amber-400 text-sm">
-          <Clock size={16} />
-          Pagamento pendente — finalize no Mercado Pago
+        <div className="flex flex-wrap items-center gap-2 text-amber-400 text-sm">
+          <Clock size={16} className="shrink-0" />
+          <span>Pagamento pendente — finalize no Mercado Pago</span>
           {subscription.checkoutUrl && (
-            <a href={subscription.checkoutUrl} className="underline hover:text-amber-300 ml-1">
+            <a href={subscription.checkoutUrl} className="underline hover:text-amber-300">
               Retomar checkout →
             </a>
           )}
@@ -108,7 +108,7 @@ export default async function PlanoPage() {
 
       {/* Bloco 1 — Plano atual + status assinatura */}
       <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-6 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-slate-400 text-sm mb-1">Plano atual</p>
             <h2 className="text-white text-xl font-bold">

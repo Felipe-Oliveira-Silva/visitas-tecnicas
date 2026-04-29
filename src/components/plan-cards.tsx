@@ -96,7 +96,7 @@ export function PlanCards({ currentPlan, currentSubscription }: PlanCardsProps) 
               {isCurrent ? (
                 <button
                   disabled
-                  className="block w-full text-center py-2.5 rounded-lg text-sm font-semibold bg-slate-700 text-slate-500 cursor-not-allowed"
+                  className="block w-full text-center py-3 min-h-[44px] rounded-lg text-sm font-semibold bg-slate-700 text-slate-500 cursor-not-allowed"
                 >
                   Plano atual
                 </button>
@@ -104,14 +104,14 @@ export function PlanCards({ currentPlan, currentSubscription }: PlanCardsProps) 
                 currentSubscription?.checkoutUrl ? (
                   <a
                     href={currentSubscription.checkoutUrl}
-                    className="block text-center bg-amber-500 hover:bg-amber-400 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                    className="block text-center bg-amber-500 hover:bg-amber-400 text-white py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-colors"
                   >
                     Retomar pagamento
                   </a>
                 ) : (
                   <button
                     disabled
-                    className="block w-full text-center py-2.5 rounded-lg text-sm font-semibold bg-slate-700 text-slate-500 cursor-not-allowed"
+                    className="block w-full text-center py-3 min-h-[44px] rounded-lg text-sm font-semibold bg-slate-700 text-slate-500 cursor-not-allowed"
                   >
                     Pagamento pendente
                   </button>
@@ -120,7 +120,7 @@ export function PlanCards({ currentPlan, currentSubscription }: PlanCardsProps) 
                 <button
                   onClick={() => handleSubscribe(plan.key)}
                   disabled={loading === plan.key}
-                  className={`block w-full text-center py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                  className={`block w-full text-center py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-colors ${
                     plan.popular
                       ? 'bg-cyan-500 hover:bg-cyan-400 text-white disabled:opacity-50'
                       : 'border border-cyan-500 text-cyan-500 hover:bg-cyan-500/10 disabled:opacity-50'

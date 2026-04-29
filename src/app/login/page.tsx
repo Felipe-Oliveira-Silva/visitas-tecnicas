@@ -42,7 +42,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{
+    <div className="login-outer" style={{
       minHeight: "100vh",
       background: "#080d14",
       display: "flex",
@@ -53,9 +53,10 @@ export default function LoginPage() {
     }}>
       <style>{`
         @media (max-width: 639px) {
-          .login-card { min-height: unset !important; }
+          .login-outer { padding: 1rem !important; }
+          .login-card { min-height: unset !important; border-radius: 12px !important; }
           .login-left { display: none !important; }
-          .login-right { padding: 2rem 1.5rem !important; }
+          .login-right { padding: 1.75rem 1.5rem !important; }
         }
       `}</style>
       <div className="login-card" style={{
@@ -202,7 +203,8 @@ export default function LoginPage() {
                   background: "#0d1b2a", border: "1px solid #1e3347",
                   borderRadius: "8px", padding: "11px 14px",
                   fontSize: "14px", color: "#e2eaf4",
-                  outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "inherit",
+                  outline: "none", width: "100%", boxSizing: "border-box",
+                  minHeight: "44px", fontFamily: "inherit",
                 }}
               />
             </div>
@@ -222,7 +224,8 @@ export default function LoginPage() {
                   background: "#0d1b2a", border: "1px solid #1e3347",
                   borderRadius: "8px", padding: "11px 14px",
                   fontSize: "14px", color: "#e2eaf4",
-                  outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "inherit",
+                  outline: "none", width: "100%", boxSizing: "border-box",
+                  minHeight: "44px", fontFamily: "inherit",
                 }}
               />
             </div>
@@ -235,7 +238,8 @@ export default function LoginPage() {
                 color: "#fff", fontSize: "14px", fontWeight: 700,
                 padding: "12px", borderRadius: "8px", border: "none",
                 cursor: loading ? "not-allowed" : "pointer",
-                letterSpacing: "0.02em", fontFamily: "inherit", marginTop: "0.25rem",
+                minHeight: "44px", letterSpacing: "0.02em",
+                fontFamily: "inherit", marginTop: "0.25rem",
               }}
             >
               {loading ? "Entrando..." : "Entrar"}
