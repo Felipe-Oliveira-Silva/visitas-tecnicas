@@ -6,7 +6,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  if (!['ADMIN', 'TECHNICIAN'].includes(session.user.role)) {
+  if (!['ADMIN', 'TECHNICIAN', 'SUPERADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
   }
 
