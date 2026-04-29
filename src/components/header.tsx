@@ -1,11 +1,11 @@
 'use client'
 
 import { useSession, signOut } from 'next-auth/react'
-import { Bell, LogOut, ChevronDown, Shield } from 'lucide-react'
+import { Bell, LogOut, ChevronDown, Shield, Menu } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
 
-export function Header({ title }: { title?: string }) {
+export function Header({ title, onMenuOpen }: { title?: string; onMenuOpen?: () => void }) {
   const { data: session } = useSession()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -26,8 +26,16 @@ export function Header({ title }: { title?: string }) {
   const isSuperAdmin = session?.user?.role === 'SUPERADMIN'
 
   return (
-    <header className="h-16 bg-slate-900/50 backdrop-blur border-b border-slate-700/50 flex items-center justify-between px-6 flex-shrink-0">
-      <div>
+    <header className="h-16 bg-slate-900/50 backdrop-blur border-b border-slate-700/50 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
+      <div className="flex items-center gap-3">
+        {/* Hamburger — mobile only */}
+        <button
+          onClick={onMenuOpen}
+          className="md:hidden w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+          aria-label="Abrir menu"
+        >
+          <Menu size={18} />
+        </button>
         {title && (
           <h1 className="text-white font-semibold text-lg leading-none">{title}</h1>
         )}
