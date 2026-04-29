@@ -51,7 +51,14 @@ export default function LoginPage() {
       padding: "2rem",
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
-      <div style={{
+      <style>{`
+        @media (max-width: 639px) {
+          .login-card { min-height: unset !important; }
+          .login-left { display: none !important; }
+          .login-right { padding: 2rem 1.5rem !important; }
+        }
+      `}</style>
+      <div className="login-card" style={{
         display: "flex",
         width: "100%",
         maxWidth: "880px",
@@ -62,7 +69,7 @@ export default function LoginPage() {
       }}>
 
         {/* LADO ESQUERDO */}
-        <div style={{
+        <div className="login-left" style={{
           flex: "1.1",
           background: "#0d1b2a",
           display: "flex",
@@ -154,7 +161,7 @@ export default function LoginPage() {
         </div>
 
         {/* LADO DIREITO */}
-        <div style={{
+        <div className="login-right" style={{
           flex: 1,
           background: "#080d14",
           display: "flex",
@@ -195,7 +202,7 @@ export default function LoginPage() {
                   background: "#0d1b2a", border: "1px solid #1e3347",
                   borderRadius: "8px", padding: "11px 14px",
                   fontSize: "14px", color: "#e2eaf4",
-                  outline: "none", width: "100%", fontFamily: "inherit",
+                  outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "inherit",
                 }}
               />
             </div>
@@ -215,7 +222,7 @@ export default function LoginPage() {
                   background: "#0d1b2a", border: "1px solid #1e3347",
                   borderRadius: "8px", padding: "11px 14px",
                   fontSize: "14px", color: "#e2eaf4",
-                  outline: "none", width: "100%", fontFamily: "inherit",
+                  outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "inherit",
                 }}
               />
             </div>

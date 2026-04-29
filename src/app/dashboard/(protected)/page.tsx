@@ -150,7 +150,7 @@ export default async function DashboardPage() {
       {/* Uso do Plano — oculto para planos sem limites (enterprise) */}
       {(limits.visitsPerMonth !== null || limits.users !== null) && (
         <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
             <h3 className="text-white font-semibold">
               Uso do Plano — <span className="text-cyan-400">{planName}</span>
             </h3>

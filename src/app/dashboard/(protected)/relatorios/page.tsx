@@ -55,7 +55,7 @@ export default function RelatoriosPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
             <FileText className="w-6 h-6 text-cyan-500" />
@@ -66,14 +66,14 @@ export default function RelatoriosPage() {
       </div>
 
       {/* Filtros */}
-      <div className="bg-slate-900 border border-slate-700 rounded-lg p-4 flex items-center gap-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-lg p-4 flex flex-wrap items-center gap-3">
         <Filter className="w-4 h-4 text-slate-400 shrink-0" />
         <div className="flex gap-2 flex-wrap">
           {(['', 'DRAFT', 'FINALIZED', 'SIGNED'] as const).map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-colors ${
                 statusFilter === s
                   ? 'bg-cyan-500 text-slate-950'
                   : 'bg-slate-800 text-slate-400 hover:text-slate-100 border border-slate-700'

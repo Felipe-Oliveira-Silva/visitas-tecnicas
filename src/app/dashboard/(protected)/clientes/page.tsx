@@ -37,7 +37,7 @@ export default async function ClientesPage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <Building2 size={24} className="text-violet-400" />
@@ -51,7 +51,7 @@ export default async function ClientesPage({
         {canEdit && (
           <Link
             href="/dashboard/clientes/novo"
-            className="flex items-center gap-2 px-4 py-2.5 bg-violet-500 hover:bg-violet-400 text-white font-semibold rounded-xl transition-colors text-sm"
+            className="flex items-center gap-2 px-4 py-3 min-h-[44px] bg-violet-500 hover:bg-violet-400 text-white font-semibold rounded-xl transition-colors text-sm"
           >
             <Plus size={16} />
             Novo Cliente
@@ -60,24 +60,24 @@ export default async function ClientesPage({
       </div>
 
       {/* Search */}
-      <form method="GET" className="flex gap-2">
+      <form method="GET" className="flex flex-wrap gap-2">
         <input
           type="text"
           name="search"
           defaultValue={search}
           placeholder="Buscar por nome, CNPJ ou e-mail..."
-          className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30 transition-colors"
+          className="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 min-h-[44px] text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30 transition-colors"
         />
         <button
           type="submit"
-          className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors text-sm font-medium"
+          className="px-5 py-3 min-h-[44px] bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors text-sm font-medium"
         >
           Buscar
         </button>
         {search && (
           <Link
             href="/dashboard/clientes"
-            className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl transition-colors text-sm"
+            className="px-5 py-3 min-h-[44px] bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl transition-colors text-sm"
           >
             Limpar
           </Link>

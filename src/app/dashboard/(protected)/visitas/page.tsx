@@ -8,8 +8,9 @@ import { Plus, CalendarX } from 'lucide-react'
 type SearchParams = { status?: string; clientId?: string; technicianId?: string }
 
 const selectClass = `
+  w-full sm:w-auto
   bg-slate-800 border border-slate-700 text-slate-300
-  rounded-lg px-3 py-2 text-sm
+  rounded-lg px-3 py-3 min-h-[44px] text-sm
   focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500
   transition-colors [color-scheme:dark]
 `
@@ -54,7 +55,7 @@ export default async function VisitasPage({ searchParams }: { searchParams: Sear
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-100">Visitas</h1>
           <p className="text-sm text-slate-400 mt-1">
@@ -66,14 +67,14 @@ export default async function VisitasPage({ searchParams }: { searchParams: Sear
             <button
               disabled
               title="Limite do plano atingido"
-              className="flex items-center gap-2 bg-slate-700 text-slate-500 font-semibold px-4 py-2.5 rounded-lg text-sm cursor-not-allowed"
+              className="flex items-center gap-2 bg-slate-700 text-slate-500 font-semibold px-4 py-3 min-h-[44px] rounded-lg text-sm cursor-not-allowed"
             >
               <Plus size={16} /> Agendar Visita
             </button>
           ) : (
             <Link
               href="/dashboard/visitas/novo"
-              className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors"
+              className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold px-4 py-3 min-h-[44px] rounded-lg text-sm transition-colors"
             >
               <Plus size={16} /> Agendar Visita
             </Link>
@@ -106,7 +107,7 @@ export default async function VisitasPage({ searchParams }: { searchParams: Sear
 
         <button
           type="submit"
-          className="bg-slate-700 hover:bg-slate-600 text-slate-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="bg-slate-700 hover:bg-slate-600 text-slate-100 px-4 py-3 min-h-[44px] rounded-lg text-sm font-medium transition-colors"
         >
           Filtrar
         </button>
@@ -114,7 +115,7 @@ export default async function VisitasPage({ searchParams }: { searchParams: Sear
         {hasFilters && (
           <Link
             href="/dashboard/visitas"
-            className="border border-slate-600 text-slate-400 hover:text-slate-200 hover:border-slate-500 px-4 py-2 rounded-lg text-sm transition-colors"
+            className="border border-slate-600 text-slate-400 hover:text-slate-200 hover:border-slate-500 px-4 py-3 min-h-[44px] rounded-lg text-sm transition-colors"
           >
             Limpar filtros
           </Link>
