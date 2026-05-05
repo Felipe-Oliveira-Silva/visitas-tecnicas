@@ -39,7 +39,7 @@ model Quotation {
   title       String
   description String?
   notes       String?
-  validUntil  DateTime
+  validUntil  DateTime?                                        // opcional
   discount    Decimal         @default(0) @db.Decimal(10, 2)  // valor fixo em R$, não percentual
   subtotal    Decimal         @default(0) @db.Decimal(10, 2)
   total       Decimal         @default(0) @db.Decimal(10, 2)
@@ -119,7 +119,7 @@ npx prisma generate
 
 Tabelas criadas: `Quotation`, `QuotationItem`, `QuotationPdf`  
 Enum criado: `QuotationStatus`  
-Risco: **zero** — 100% aditivo.
+Risco: **baixo** — 100% aditivo, sem alterações em tabelas existentes. Testar em staging antes de produção.
 
 Ordem de deploy: rodar a migration **antes** de subir o código novo.
 
@@ -171,20 +171,19 @@ src/app/api/orcamentos/
 - Cria Quotation + QuotationItem[] em transaction
 
 **GET /api/orcamentos/[id]**
-- `findUnique({ where: { id, companyId } })` — 404 se não pertencer à empresa
+- `findFirst({ where: { id, companyId: session.user.companyId } })` — 404 se não pertencer à empresa
 
 **PUT /api/orcamentos/[id]**
-- Role ≠ READER
-- Verifica `quotation.companyId === session.user.companyId`
+- Role ≠ READER (segue padrão de `/api/relatorios/[id]`)
+- `findFirst({ where: { id, companyId: session.user.companyId } })` — 404 se não pertencer
 - Verifica `quotation.status === 'DRAFT'`
-- TECHNICIAN: só se `quotation.createdById === session.user.id`
 - Deleta e recria itens em transaction; recomputa totais
 
 **PATCH /api/orcamentos/[id]/status**
 - Máquina de estados:
-  - `DRAFT → SENT`: ADMIN ou TECHNICIAN criador
-  - `SENT → APPROVED`: apenas ADMIN
-  - `SENT → REJECTED`: apenas ADMIN
+  - `DRAFT → SENT`: ADMIN, TECHNICIAN ou SUPERADMIN (role ≠ READER)
+  - `SENT → APPROVED`: apenas ADMIN ou SUPERADMIN
+  - `SENT → REJECTED`: apenas ADMIN ou SUPERADMIN
   - Qualquer outra transição → 400
 
 **POST /api/orcamentos/[id]/gerar-pdf**
@@ -216,14 +215,18 @@ src/app/dashboard/(protected)/visitas/[id]/
 
 ### Layout do PDF
 
+**Código de exibição:** `ORC-${id.slice(-6).toUpperCase()}` — sem campo novo no banco. Exibido no header do PDF e na listagem.
+
+**PDF em DRAFT:** permitido. O PDF deve exibir o label "RASCUNHO" em destaque no header (texto vermelho ou faixa diagonal). Implementado diretamente no template com `{quotation.status === 'DRAFT' && <Text>RASCUNHO</Text>}`.
+
 ```
 ┌─────────────────────────────────────────┐
-│ [Logo]              ORÇAMENTO #id       │
-│ Nome da empresa                         │
+│ [Logo]         ORÇAMENTO ORC-A1B2C3     │
+│ Nome da empresa       [RASCUNHO se DRAFT]│
 ├─────────────────────────────────────────┤
 │ Cliente: Nome | CNPJ | Cidade           │
-│ Validade: DD/MM/YYYY                    │
-│ Ref. Visita: #id (se existir)           │
+│ Validade: DD/MM/YYYY (se informada)     │
+│ Ref. Visita: #[últimos 6 do visitId]    │
 ├─────────────────────────────────────────┤
 │ Descrição        │ Qtd │ Unit │  Total  │
 │ ─────────────────┼─────┼──────┼──────── │
@@ -281,16 +284,22 @@ DRAFT → SENT → APPROVED
 
 ## 7. Permissões
 
+**Roles existentes no schema:** ADMIN, TECHNICIAN, READER, SUPERADMIN — todos os 4 confirmados em `prisma/schema.prisma`.
+
+**Padrão do projeto (verificado em `/api/visitas` e `/api/relatorios`):** TECHNICIAN vê e edita qualquer registro da empresa — não existe restrição por `createdById` no projeto atual. Apenas READER é bloqueado em mutations; DELETE é restrito a ADMIN/SUPERADMIN.
+
 | Ação | ADMIN | TECHNICIAN | READER | SUPERADMIN |
 |---|---|---|---|---|
 | Listar orçamentos da empresa | ✅ todos | ✅ todos | ✅ todos | ✅ todos |
 | Ver detalhe | ✅ | ✅ | ✅ | ✅ |
 | Criar | ✅ | ✅ | ❌ | ✅ |
-| Editar (só DRAFT) | ✅ qualquer | ✅ só os próprios | ❌ | ✅ |
-| DRAFT → SENT | ✅ | ✅ só os próprios | ❌ | ✅ |
+| Editar (só DRAFT) | ✅ qualquer | ✅ qualquer | ❌ | ✅ |
+| DRAFT → SENT | ✅ | ✅ | ❌ | ✅ |
 | SENT → APPROVED/REJECTED | ✅ | ❌ | ❌ | ✅ |
 | Gerar PDF | ✅ | ✅ | ❌ | ✅ |
 | Deletar | Fora do MVP | — | — | — |
+
+**Nota:** A aprovação/rejeição final (SENT → APPROVED/REJECTED) é restrita a ADMIN/SUPERADMIN por ser uma decisão comercial, não operacional.
 
 ---
 
@@ -299,7 +308,7 @@ DRAFT → SENT → APPROVED
 | Ponto | Garantia |
 |---|---|
 | Listagem | `WHERE companyId = session.user.companyId` |
-| Detalhe/Edit | `findUnique({ where: { id, companyId } })` — 404 se falhar |
+| Detalhe/Edit | `findFirst({ where: { id, companyId: session.user.companyId } })` — 404 se não pertencer |
 | Criação | `companyId` sempre de `session.user.companyId`, nunca do body |
 | clientId | Valida `client.companyId === session.user.companyId` |
 | visitId | Valida `visit.companyId === session.user.companyId` se fornecido |
@@ -323,8 +332,8 @@ const createQuotationSchema = z.object({
   title:       z.string().min(2).max(255),
   description: z.string().max(2000).optional(),
   notes:       z.string().max(2000).optional(),
-  validUntil:  z.string().datetime(),
-  discount:    z.number().min(0).default(0),  // valor fixo em R$ (não percentual)
+  validUntil:  z.string().datetime().optional(),      // opcional
+  discount:    z.number().min(0).default(0),          // valor fixo em R$ (não percentual)
   clientId:    z.string().cuid(),
   visitId:     z.string().cuid().optional(),
   items:       z.array(quotationItemSchema).min(1),
@@ -342,7 +351,18 @@ const computedItems = items.map(item => ({
   total: new Decimal(item.quantity).mul(item.unitPrice).toDecimalPlaces(2),
 }))
 const subtotal = computedItems.reduce((acc, i) => acc.plus(i.total), new Decimal(0))
-const total    = subtotal.minus(discount).toDecimalPlaces(2)
+const discountDecimal = new Decimal(discount)
+
+// Validação: desconto não pode exceder subtotal
+if (discountDecimal.greaterThan(subtotal)) {
+  return NextResponse.json(
+    { error: 'O desconto não pode ser maior que o subtotal' },
+    { status: 400 }
+  )
+}
+
+const total = subtotal.minus(discountDecimal).toDecimalPlaces(2)
+// Invariante: total >= 0 (garantido pela validação acima)
 ```
 
 **Serialização Decimal no JSON response:**
@@ -354,19 +374,19 @@ Todos os campos `Decimal` devem ser serializados explicitamente (`.toNumber()` o
 
 | Risco | Prob | Impacto | Mitigação |
 |---|---|---|---|
-| Cross-tenant via clientId/visitId | Baixa | Alto | Validar ownership em toda criação/edição |
-| Total incorreto (confiado do client) | Média | Médio | Sempre recomputar server-side |
-| Decimal não serializado no JSON | Alta | Médio | Serializar explicitamente todos os campos |
-| Migration falhar em prod | Muito baixa | Alto | Migration aditiva; testar em staging |
-| TECHNICIAN editando orçamento alheio | Baixa | Médio | Checar `createdById === session.user.id` no PUT |
+| Cross-tenant via clientId/visitId | Baixa | Alto | Validar ownership (`findFirst` com companyId) em toda criação/edição |
+| Total incorreto (confiado do client) | Média | Médio | Sempre recomputar server-side; nunca usar total do body |
+| Desconto > subtotal causando total negativo | Média | Médio | Validação server-side antes de salvar |
+| Decimal não serializado no JSON | Alta | Médio | Serializar explicitamente todos os campos com `.toNumber()` |
+| Migration falhar em prod | Muito baixa | Médio | Migration aditiva; testar em staging primeiro |
 | PDF com layout quebrado | Média | Baixo | Testar output localmente antes de subir |
-| Naming conflict de relation no User | Baixa | Alto | `@relation("QuotationsCreated")` nos dois lados |
+| Naming conflict de relation no User | Baixa | Alto | `@relation("QuotationsCreated")` nos dois lados do schema |
 
 ---
 
 ## 11. Plano de implementação
 
-### Etapa 1 — Schema + Migration (~1-2h) — risco zero
+### Etapa 1 — Schema + Migration (~1-2h) — risco baixo
 - Adicionar enum e models ao `schema.prisma`
 - Adicionar back-relations
 - `prisma migrate dev --name add-quotation-module`
