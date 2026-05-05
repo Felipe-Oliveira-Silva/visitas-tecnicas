@@ -27,24 +27,26 @@ model Company {
   visits        Visit[]
   reports       Report[]
   subscriptions Subscription[]
+  quotations    Quotation[]
 }
 
 // ─── USUÁRIO ─────────────────────────────────────────────────────────────────
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(TECHNICIAN)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String               @id @default(cuid())
+  name          String
+  email         String               @unique
+  password      String
+  role          Role                 @default(TECHNICIAN)
+  active        Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
   statusHistory VisitStatusHistory[]
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  companyId     String
+  company       Company              @relation(fields: [companyId], references: [id])
 
-  visits  Visit[]
-  reports Report[]
+  visits            Visit[]
+  reports           Report[]
+  quotationsCreated Quotation[] @relation("QuotationsCreated")
 }
 
 enum Role {
@@ -97,30 +99,32 @@ model Client {
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
 
-  visits Visit[]
+  visits     Visit[]
+  quotations Quotation[]
 }
 
 // ─── VISITA ───────────────────────────────────────────────────────────────────
 model Visit {
-  id                  String      @id @default(cuid())
-  scheduledAt         DateTime
-  realizedAt          DateTime?
-  status              VisitStatus @default(SCHEDULED)
-  notRealizedReason   String?
-  observations        String?
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
-  statusHistory VisitStatusHistory[]
-  companyId    String
-  company      Company @relation(fields: [companyId], references: [id])
+  id                String               @id @default(cuid())
+  scheduledAt       DateTime
+  realizedAt        DateTime?
+  status            VisitStatus          @default(SCHEDULED)
+  notRealizedReason String?
+  observations      String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  statusHistory     VisitStatusHistory[]
+  companyId         String
+  company           Company              @relation(fields: [companyId], references: [id])
 
-  clientId     String
-  client       Client  @relation(fields: [clientId], references: [id])
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
 
   technicianId String
-  technician   User    @relation(fields: [technicianId], references: [id])
+  technician   User   @relation(fields: [technicianId], references: [id])
 
-  report Report?
+  report     Report?
+  quotations Quotation[]
 }
 
 enum VisitStatus {
@@ -181,12 +185,12 @@ enum AttachmentType {
 
 // ─── ASSINATURA ───────────────────────────────────────────────────────────────
 model Signature {
-  id            String   @id @default(cuid())
-  signerName    String
-  signerDoc     String?
-  imagePath     String
-  signedAt      DateTime @default(now())
-  evidenceData  Json?
+  id           String   @id @default(cuid())
+  signerName   String
+  signerDoc    String?
+  imagePath    String
+  signedAt     DateTime @default(now())
+  evidenceData Json?
 
   companyId String
   reportId  String @unique
@@ -217,4 +221,68 @@ model VisitStatusHistory {
   user  User  @relation(fields: [changedBy], references: [id])
 
   @@map("visit_status_history")
+}
+
+// ─── ORÇAMENTOS ───────────────────────────────────────────────────────────────
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  APPROVED
+  REJECTED
+}
+
+model Quotation {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  notes       String?
+  validUntil  DateTime?
+  discount    Decimal         @default(0) @db.Decimal(10, 2)
+  subtotal    Decimal         @default(0) @db.Decimal(10, 2)
+  total       Decimal         @default(0) @db.Decimal(10, 2)
+  status      QuotationStatus @default(DRAFT)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  companyId   String
+  clientId    String
+  visitId     String?
+  createdById String
+
+  company   Company         @relation(fields: [companyId], references: [id])
+  client    Client          @relation(fields: [clientId], references: [id])
+  visit     Visit?          @relation(fields: [visitId], references: [id])
+  createdBy User            @relation("QuotationsCreated", fields: [createdById], references: [id])
+  items     QuotationItem[]
+  pdf       QuotationPdf?
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([visitId])
+}
+
+model QuotationItem {
+  id          String  @id @default(cuid())
+  description String
+  quantity    Decimal @db.Decimal(10, 3)
+  unitPrice   Decimal @db.Decimal(10, 2)
+  total       Decimal @db.Decimal(10, 2)
+  order       Int     @default(0)
+
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId])
+}
+
+model QuotationPdf {
+  id        String   @id @default(cuid())
+  pdfPath   String
+  createdAt DateTime @default(now())
+
+  quotationId String @unique
+  companyId   String
+
+  quotation Quotation @relation(fields: [quotationId], references: [id])
 }
