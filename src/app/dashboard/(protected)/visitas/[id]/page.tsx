@@ -2,7 +2,8 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Calendar, MapPin, User, Building2, Clock, Pencil } from 'lucide-react'
+import { Calendar, MapPin, User, Building2, Clock, Pencil, Receipt, Plus } from 'lucide-react'
+import { QuotationStatus } from '@prisma/client'
 import { ChangeStatusButton } from './change-status-button'
 import GenerateReportButton from './generate-report-button'
 
@@ -11,6 +12,15 @@ const statusConfig = {
   REALIZED:     { label: 'Realizada',     color: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' },
   NOT_REALIZED: { label: 'Não Realizada', color: 'bg-red-500/10 text-red-400 border border-red-500/30' },
 }
+
+const quotationStatusConfig: Record<QuotationStatus, { label: string; color: string }> = {
+  DRAFT:    { label: 'Rascunho',  color: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' },
+  SENT:     { label: 'Enviado',   color: 'bg-blue-500/10 text-blue-400 border border-blue-500/30' },
+  APPROVED: { label: 'Aprovado',  color: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' },
+  REJECTED: { label: 'Rejeitado', color: 'bg-red-500/10 text-red-400 border border-red-500/30' },
+}
+
+const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 
 export default async function VisitaDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params  // ← linha nova
@@ -26,7 +36,8 @@ export default async function VisitaDetalhePage({ params }: { params: Promise<{ 
         include: { user: { select: { name: true } } },
         orderBy: { createdAt: 'desc' },
       },
-      report: { select: { id: true } },
+      report:      { select: { id: true } },
+      quotations:  { select: { id: true, title: true, status: true, total: true }, orderBy: { createdAt: 'desc' } },
     },
   })
 
@@ -137,6 +148,48 @@ export default async function VisitaDetalhePage({ params }: { params: Promise<{ 
               existingReportId={visit.report?.id ?? null}
             />
           )}
+          <Link
+            href={`/dashboard/orcamentos/novo?visitId=${visit.id}`}
+            className="flex items-center gap-2 border border-amber-600 text-amber-400 px-4 py-3 min-h-[44px] rounded-lg text-sm hover:bg-amber-600/10 transition-colors"
+          >
+            <Plus size={14} /> Novo Orçamento
+          </Link>
+        </div>
+      )}
+
+      {/* Orçamentos vinculados */}
+      {visit.quotations.length > 0 && (
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
+          <h2 className="text-sm font-semibold text-slate-100 mb-4 flex items-center gap-2">
+            <Receipt size={16} className="text-amber-500" /> Orçamentos Vinculados
+          </h2>
+          <ul className="space-y-2">
+            {visit.quotations.map(q => {
+              const qCfg = quotationStatusConfig[q.status]
+              const orcCode = `ORC-${q.id.slice(-6).toUpperCase()}`
+              return (
+                <li key={q.id}>
+                  <Link
+                    href={`/dashboard/orcamentos/${q.id}`}
+                    className="flex items-center justify-between gap-3 rounded-lg px-4 py-3 hover:bg-slate-800 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full border ${qCfg.color}`}>
+                        {qCfg.label}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-slate-100 truncate">{q.title}</p>
+                        <p className="text-xs text-slate-500 font-mono">{orcCode}</p>
+                      </div>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold text-amber-400">
+                      {fmtBRL.format(q.total.toNumber())}
+                    </span>
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
         </div>
       )}
 
