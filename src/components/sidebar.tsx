@@ -10,6 +10,7 @@ import {
   Building2,
   ClipboardList,
   FileText,
+  Receipt,
   ChevronLeft,
   ChevronRight,
   Zap,
@@ -45,6 +46,12 @@ const navItems = [
     label: 'Relatórios',
     href: '/dashboard/relatorios',
     icon: FileText,
+    adminOnly: false,
+  },
+  {
+    label: 'Orçamentos',
+    href: '/dashboard/orcamentos',
+    icon: Receipt,
     adminOnly: false,
   },
   {
