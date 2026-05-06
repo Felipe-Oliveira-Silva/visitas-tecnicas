@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Building2, Calendar, User, FileText, Pencil } from 'lucide-react'
 import { QuotationStatus } from '@prisma/client'
 import { ChangeStatusButton } from './change-status-button'
+import { GerarPdfButton } from './gerar-pdf-button'
 
 const statusConfig: Record<QuotationStatus, { label: string; color: string }> = {
   DRAFT:    { label: 'Rascunho', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' },
@@ -27,6 +28,7 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
       client:    { select: { id: true, name: true, city: true, state: true } },
       visit:     { select: { id: true, scheduledAt: true } },
       createdBy: { select: { id: true, name: true } },
+      pdf:       true,
     },
   })
 
@@ -169,7 +171,7 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
         </div>
       </div>
 
-      {/* Ações */}
+      {/* Ações — status + edição */}
       {canEdit && (
         <div className="flex flex-wrap gap-3">
           <ChangeStatusButton
@@ -187,6 +189,12 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
           )}
         </div>
       )}
+
+      {/* PDF */}
+      <GerarPdfButton
+        quotationId={quotation.id}
+        hasPdf={!!quotation.pdf}
+      />
     </div>
   )
 }
