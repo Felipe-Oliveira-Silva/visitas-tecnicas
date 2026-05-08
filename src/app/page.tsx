@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FaqItem } from '@/components/faq-item'
 import { PlanCards } from '@/components/plan-cards'
+import { SignOutButton } from '@/components/sign-out-button'
 import { WHATSAPP_URL } from '@/lib/constants'
 
 const FEATURES = [
@@ -82,21 +83,23 @@ export default async function HomePage() {
           >
             FAQ
           </a>
-          {session ? null : (
-            <Link
-              href="/login"
-              className="border border-cyan-500 text-cyan-500 px-4 py-1.5 rounded-lg text-sm hover:bg-cyan-500/10 transition-colors"
-            >
-              Entrar
-            </Link>
-          )}
-          {session ? null : (
-            <Link
-              href="/cadastro"
-              className="bg-cyan-500 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-cyan-400 transition-colors"
-            >
-              Cadastrar
-            </Link>
+          {session ? (
+            <SignOutButton />
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="border border-cyan-500 text-cyan-500 px-4 py-1.5 rounded-lg text-sm hover:bg-cyan-500/10 transition-colors"
+              >
+                Entrar
+              </Link>
+              <Link
+                href="/cadastro"
+                className="bg-cyan-500 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-cyan-400 transition-colors"
+              >
+                Cadastrar
+              </Link>
+            </>
           )}
         </div>
       </nav>
