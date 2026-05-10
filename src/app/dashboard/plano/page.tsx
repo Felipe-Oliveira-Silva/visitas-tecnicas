@@ -5,6 +5,7 @@ import { getUsage, PLAN_LIMITS } from '@/lib/plan-limits'
 import { BILLING_PLANS, PlanKey } from '@/lib/billing'
 import { UsageBar } from '@/components/usage-bar'
 import { PlanCards } from '@/components/plan-cards'
+import { SignOutButton } from '@/components/sign-out-button'
 import { CreditCard, AlertTriangle, CheckCircle2, Clock, AlertCircle, XCircle } from 'lucide-react'
 
 export default async function PlanoPage() {
@@ -98,12 +99,15 @@ export default async function PlanoPage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <CreditCard size={24} className="text-cyan-400" />
-          Plano e Uso
-        </h1>
-        <p className="text-slate-400 mt-1">Gerencie seu plano e acompanhe o uso de recursos.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <CreditCard size={24} className="text-cyan-400" />
+            Plano e Uso
+          </h1>
+          <p className="text-slate-400 mt-1">Gerencie seu plano e acompanhe o uso de recursos.</p>
+        </div>
+        <SignOutButton />
       </div>
 
       {/* Bloco 1 — Plano atual + status assinatura */}
