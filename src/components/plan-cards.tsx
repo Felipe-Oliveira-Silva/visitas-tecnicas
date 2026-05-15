@@ -49,11 +49,11 @@ export function PlanCards({ currentPlan, currentSubscription }: PlanCardsProps) 
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-400 text-sm">
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
           {error}
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
         {PLANS.map((plan) => {
           const isCurrent = currentPlan === plan.key
           const isPending = currentSubscription?.planKey === plan.key && currentSubscription.status === 'PENDING'
@@ -61,42 +61,42 @@ export function PlanCards({ currentPlan, currentSubscription }: PlanCardsProps) 
           return (
             <div
               key={plan.key}
-              className={`bg-[#0d1b2a] rounded-xl p-6 text-left flex flex-col relative ${
+              className={`relative rounded-2xl backdrop-blur-xl p-6 sm:p-7 text-left flex flex-col ${
                 plan.popular
-                  ? 'border-2 border-cyan-500'
-                  : 'border border-[#1e3a5f]'
+                  ? 'border border-cyan-400/40 bg-gradient-to-b from-cyan-500/[0.08] to-white/[0.02] shadow-2xl shadow-cyan-500/15'
+                  : 'border border-white/10 bg-white/[0.03]'
               }`}
             >
               {plan.popular && !isCurrent && (
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-[11px] font-semibold tracking-wide px-3 py-1 rounded-full shadow-lg shadow-cyan-500/30 whitespace-nowrap">
                   Mais popular
                 </span>
               )}
               {isCurrent && (
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-600 text-slate-200 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center bg-white/10 border border-white/15 text-slate-200 text-[11px] font-semibold tracking-wide px-3 py-1 rounded-full whitespace-nowrap">
                   Seu plano atual
                 </span>
               )}
 
-              <p className={`text-xs uppercase tracking-widest mb-2 ${plan.popular ? 'text-cyan-500' : 'text-slate-400'}`}>
+              <p className={`text-[11px] uppercase tracking-widest mb-2 font-semibold ${plan.popular ? 'text-cyan-300' : 'text-slate-400'}`}>
                 {plan.name}
               </p>
-              <p className="text-3xl font-extrabold text-slate-100 mb-1">
+              <p className="text-4xl font-bold tracking-tight text-slate-100 leading-none mb-1">
                 R${plan.price}
-                <span className="text-base font-normal text-slate-500">/mês</span>
+                <span className="text-sm font-normal text-slate-400 ml-1">/mês</span>
               </p>
-              <p className="text-slate-500 text-sm mb-6">{plan.subtitle}</p>
+              <p className="text-slate-400 text-sm mt-2 mb-6">{plan.subtitle}</p>
 
-              <ul className="flex-1 space-y-2 mb-6 text-sm text-slate-400">
+              <ul className="flex-1 space-y-2.5 mb-6 text-sm text-slate-300">
                 {plan.features.map((f) => (
-                  <li key={f}>✓ {f}</li>
+                  <li key={f} className="leading-relaxed">✓ {f}</li>
                 ))}
               </ul>
 
               {isCurrent ? (
                 <button
                   disabled
-                  className="block w-full text-center py-3 min-h-[44px] rounded-lg text-sm font-semibold bg-slate-700 text-slate-500 cursor-not-allowed"
+                  className="block w-full text-center py-3 min-h-[44px] rounded-xl text-sm font-semibold bg-white/[0.05] border border-white/10 text-slate-400 cursor-not-allowed"
                 >
                   Plano atual
                 </button>
@@ -104,14 +104,14 @@ export function PlanCards({ currentPlan, currentSubscription }: PlanCardsProps) 
                 currentSubscription?.checkoutUrl ? (
                   <a
                     href={currentSubscription.checkoutUrl}
-                    className="block text-center bg-amber-500 hover:bg-amber-400 text-white py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-colors"
+                    className="block w-full text-center bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-white py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-all shadow-lg shadow-amber-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080d14]"
                   >
                     Retomar pagamento
                   </a>
                 ) : (
                   <button
                     disabled
-                    className="block w-full text-center py-3 min-h-[44px] rounded-lg text-sm font-semibold bg-slate-700 text-slate-500 cursor-not-allowed"
+                    className="block w-full text-center py-3 min-h-[44px] rounded-xl text-sm font-semibold bg-white/[0.05] border border-white/10 text-slate-400 cursor-not-allowed"
                   >
                     Pagamento pendente
                   </button>
@@ -120,10 +120,10 @@ export function PlanCards({ currentPlan, currentSubscription }: PlanCardsProps) 
                 <button
                   onClick={() => handleSubscribe(plan.key)}
                   disabled={loading === plan.key}
-                  className={`block w-full text-center py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-colors ${
+                  className={`block w-full text-center py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080d14] disabled:opacity-50 disabled:cursor-not-allowed ${
                     plan.popular
-                      ? 'bg-cyan-500 hover:bg-cyan-400 text-white disabled:opacity-50'
-                      : 'border border-cyan-500 text-cyan-500 hover:bg-cyan-500/10 disabled:opacity-50'
+                      ? 'bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:-translate-y-0.5 disabled:hover:translate-y-0'
+                      : 'border border-white/15 bg-white/[0.02] text-slate-200 hover:bg-white/[0.06] hover:border-white/25'
                   }`}
                 >
                   {loading === plan.key ? 'Aguarde...' : 'Assinar'}
